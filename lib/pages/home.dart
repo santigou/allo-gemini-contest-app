@@ -107,6 +107,7 @@ class _HomeState extends State<Home> {
     );
   }
 
+  //TODO: Pasar este codigo al servicio
   //Call gemini api
   Future<void> GeminiApiCall() async {
     final String user_prompt = _controller.text;
