@@ -83,7 +83,7 @@ class _HomeState extends State<Home> {
                   const SizedBox(width: 20),
                   ElevatedButton.icon(
                     onPressed: () async {
-                      await GeminiApiCall();
+                      //TODO ADD THE METHOD FROM API_SERVICE,  TRY TO USE DEPENDENCY INJECTION
                     },
                     icon: const Icon(Icons.play_arrow),
                     label: const Text('Iniciar'),
@@ -107,43 +107,6 @@ class _HomeState extends State<Home> {
     );
   }
 
-  //TODO: Pasar este codigo al servicio
-  //Call gemini api
-  Future<void> GeminiApiCall() async {
-    final String user_prompt = _controller.text;
-    final url = Uri.parse('https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash-latest:generateContent?key=AIzaSyDDaieCLfRwr9KUyHvC7XTF98Noka1GsLY');
 
-    try {
-
-      final response = await http.post(
-        url,
-        headers: {'Content-Type': 'application/json'},
-        body: jsonEncode({
-          'contents': [
-            {
-              'parts': [
-                //TODO: reemplazar con un buen prompt que retorne el camino a seguir por el usuario
-                {'text': 'Hello'}
-              ]
-            }
-          ]
-        }),
-      );
-      if (response.statusCode == 200) {
-        final responseData = jsonDecode(response.body);
-        final text = responseData['candidates'][0]['content']['parts'][0]['text'];
-        print(text);
-        setState(() {
-          _apiResponse = text;
-        });
-      } else {
-        _apiResponse = ('Failed to fetch API. Status code: ${response.statusCode}');
-      }
-    } catch (e) {
-      setState(() {
-        _apiResponse = 'Error: $e';
-      });
-    }
-  }
 
 }

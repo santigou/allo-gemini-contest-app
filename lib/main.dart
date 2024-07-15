@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:gemini_proyect/pages/home.dart';
+
+import 'ui/pages/home/home.dart';
 
 void main() {
   runApp(const MyApp());
