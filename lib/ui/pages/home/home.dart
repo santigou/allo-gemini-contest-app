@@ -1,6 +1,8 @@
+import 'dart:convert';
 import 'dart:math';
 import 'package:flutter/material.dart';
 import 'package:gemini_proyect/domain/services/api_service.dart';
+import 'package:gemini_proyect/ui/pages/playground/steps_screen.dart';
 
 class Home extends StatefulWidget {
   final ApiService apiService;
@@ -14,7 +16,7 @@ class _HomeState extends State<Home> {
 
   final TextEditingController _controller = TextEditingController();
   final List<String> randomTextList = [
-    "Quiero prepararme para una entrevista como programador backend junior",
+    "Quiero prepararme para una entrevista como programador backend junior en ingles",
     "Voy a trabajar como mecero en Italia que necesito saber?",
     "Quiero aprender ingles para responder correctamente a mi profesor",
     "Tendre un examen oral en portuges, soy estudiante de universidad"
@@ -91,12 +93,6 @@ class _HomeState extends State<Home> {
                   ),
                 ],
               ),
-              const SizedBox(height: 20),
-              Text(
-                _apiResponse,
-                textAlign: TextAlign.center,
-                style: const TextStyle(fontSize: 16, color: Colors.black),
-              ),
             ],
           ),
         ),
@@ -106,13 +102,29 @@ class _HomeState extends State<Home> {
   }
 
   Future<void> _callApi() async{
-    final prompt = _controller.text;
-    final response = await widget.apiService.geminiApiCall(prompt);
-    //TODO: eliminar print
+    final userPrompt = _controller.text;
+    final apiPrompt = "El usuario quiere aprender lo siguiente: \"$userPrompt\". Proporcione una serie de pasos muy resumidos en cuanto a texto pero claros para lograr este objetivo, SOLO RESPONDE de la siguiente forma: [\"primer paso\",\"segundo paso\",\"tercer paso\",\"etc..\"].";
+    final response = await widget.apiService.geminiApiCall(apiPrompt);
     print(response);
-    setState(() {
-      _apiResponse = response;
-    });
+    final steps = _parseResponse(response);
+    //TODO eliminar prints y manejo de errores
+    print("Estos son los steps ${steps[0]}");
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => StepsScreen(steps: steps),
+      ),
+    );
+  }
+
+  List<String> _parseResponse(String response) {
+    try {
+      return List<String>.from(jsonDecode(response));
+    } catch (e) {
+      //TODO eliminar print
+      print("Error al decodificar la respuesta: $e");
+      return [];
+    }
   }
 
 }
