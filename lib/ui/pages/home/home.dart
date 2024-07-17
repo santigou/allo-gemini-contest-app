@@ -21,7 +21,6 @@ class _HomeState extends State<Home> {
     "Quiero aprender ingles para responder correctamente a mi profesor",
     "Tendre un examen oral en portuges, soy estudiante de universidad"
   ];
-  String _apiResponse = "";
 
   void setRandomText(){
     final random = Random();
