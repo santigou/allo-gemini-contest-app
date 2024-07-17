@@ -1,10 +1,12 @@
 import 'dart:convert';
 import 'dart:math';
 import 'package:flutter/material.dart';
+import 'package:gemini_proyect/domain/services/api_service.dart';
 import 'package:http/http.dart' as http;
 
 class Home extends StatefulWidget {
-  const Home({super.key});
+  final ApiService apiService;
+  const Home({super.key, required this.apiService});
 
   @override
   State<Home> createState() => _HomeState();
@@ -82,9 +84,7 @@ class _HomeState extends State<Home> {
                   ),
                   const SizedBox(width: 20),
                   ElevatedButton.icon(
-                    onPressed: () async {
-                      //TODO ADD THE METHOD FROM API_SERVICE,  TRY TO USE DEPENDENCY INJECTION
-                    },
+                    onPressed: _callApi,
                     icon: const Icon(Icons.play_arrow),
                     label: const Text('Iniciar'),
                     style: ElevatedButton.styleFrom(
@@ -97,7 +97,7 @@ class _HomeState extends State<Home> {
               Text(
                 _apiResponse,
                 textAlign: TextAlign.center,
-                style: TextStyle(fontSize: 16, color: Colors.black),
+                style: const TextStyle(fontSize: 16, color: Colors.black),
               ),
             ],
           ),
@@ -107,6 +107,14 @@ class _HomeState extends State<Home> {
     );
   }
 
-
+  Future<void> _callApi() async{
+    final prompt = _controller.text;
+    final response = await widget.apiService.geminiApiCall(prompt);
+    //TODO: eliminar print
+    print(response);
+    setState(() {
+      _apiResponse = response;
+    });
+  }
 
 }

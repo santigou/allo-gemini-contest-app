@@ -1,19 +1,20 @@
 import 'package:flutter/material.dart';
-
+import 'domain/services/api_service.dart';
 import 'ui/pages/home/home.dart';
 
 void main() {
-  runApp(const MyApp());
+  runApp(MyApp());
 }
 
 class MyApp extends StatelessWidget {
-  const MyApp({super.key});
+  final ApiService apiService = ApiService();
+  MyApp({super.key});
 
   // This widget is the root of the application.
   @override
   Widget build(BuildContext context) {
-    return const MaterialApp(
-      home: Home(),
+    return MaterialApp(
+      home: Home(apiService: apiService),
       debugShowCheckedModeBanner: false,
     );
   }
