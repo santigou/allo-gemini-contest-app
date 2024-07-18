@@ -102,7 +102,7 @@ class _HomeState extends State<Home> {
 
   Future<void> _callApi() async{
     final userPrompt = _controller.text;
-    final apiPrompt = "El usuario quiere aprender lo siguiente: \"$userPrompt\". Proporcione una serie de pasos muy resumidos en cuanto a texto pero claros para lograr este objetivo, SOLO RESPONDE de la siguiente forma: [\"primer paso\",\"segundo paso\",\"tercer paso\",\"etc..\"].";
+    final apiPrompt = "El usuario quiere aprender lo siguiente: \"$userPrompt\". Proporcione una serie de pasos muy resumidos en cuanto a texto pero claros para lograr este objetivo, SOLO RESPONDE de la siguiente forma: [\"primer paso\",\"segundo paso\",\"tercer paso\",\"etc..\"]. los pasos con descripciones cortas de maximo 5 palabras, el ultimo paso debe ser siempre para practicar lo aprendido en este roadmap";
     final response = await widget.apiService.geminiApiCall(apiPrompt);
     print(response);
     final steps = _parseResponse(response);
