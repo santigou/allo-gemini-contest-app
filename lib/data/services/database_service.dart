@@ -1,15 +1,29 @@
+import 'dart:async';
+import 'dart:core';
 import 'package:sqflite/sqflite.dart';
 import 'package:path/path.dart';
 
-class InitDatabaseRepository {
-  Future<Database> createDatabase() async {
-    final dbPath = await getDatabasesPath();
-    final database = openDatabase(
-      join(dbPath, 'my_language_app.db'),
-      version: 1,
-      onCreate: (db, version) async {
-        await _createTables(db);
-      },
+class DatabaseService {
+  static final DatabaseService instance = DatabaseService._constructor();
+  static Database? _db;
+
+  DatabaseService._constructor();
+
+  Future<Database> get database async
+  {
+    if(_db != null) return _db!;
+    _db = await getDatabase();
+    return _db!;
+  }
+
+  Future<Database> getDatabase() async {
+    final databaseDirPath = await getDatabasesPath();
+    final databasePath = join(databaseDirPath,"database.db");
+    final database = await openDatabase(
+        databasePath,
+        onCreate: (db, version) async {
+          await _createTables(db);
+        }
     );
     return database;
   }
@@ -19,6 +33,7 @@ class InitDatabaseRepository {
       CREATE TABLE languages (
         id TEXT PRIMARY KEY,
         name TEXT
+        image TEXT
       )
     ''');
 

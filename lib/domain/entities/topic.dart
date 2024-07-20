@@ -16,4 +16,14 @@ class Topic {
     required this.summary,
     required this.subtopicCount,
   });
+
+  factory Topic.fromSqfliteDatabase(Map<String, dynamic> map) => Topic(
+      id: map['id'] as String,
+      name: map['name'] as String,
+      description: map['description'] as String,
+      objectives: map['objectives'] as String,
+      languageId: map['languageId'] as String,
+      summary: map['summary'] as String,
+      subtopicCount: map['subtopicCount'] as int,
+    );
 }
