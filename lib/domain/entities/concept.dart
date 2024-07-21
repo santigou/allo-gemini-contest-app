@@ -12,4 +12,5 @@ class Concept {
     required this.examples,
     required this.subtopicId,
   });
+
 }

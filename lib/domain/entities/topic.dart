@@ -1,9 +1,9 @@
 class Topic {
-  String id;
+  int id;
   String name;
   String description;
   String objectives;
-  String languageId;
+  int languageId;
   String summary;
   int subtopicCount;
 
@@ -18,11 +18,11 @@ class Topic {
   });
 
   factory Topic.fromSqfliteDatabase(Map<String, dynamic> map) => Topic(
-      id: map['id'] as String,
+      id: map['id'] as int,
       name: map['name'] as String,
       description: map['description'] as String,
       objectives: map['objectives'] as String,
-      languageId: map['languageId'] as String,
+      languageId: map['languageId'] as int,
       summary: map['summary'] as String,
       subtopicCount: map['subtopicCount'] as int,
     );

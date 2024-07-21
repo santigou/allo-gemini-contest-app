@@ -36,8 +36,7 @@ class SubtopicDao {
         subtopic.summary,
         subtopic.conceptCount,
         subtopic.completed ? 1 : 0,
-        subtopic.previousSubtopicId,
-        subtopic.nextSubtopicId,
+        subtopic.order,
         subtopic.topicId,
       ],
     );
@@ -54,10 +53,8 @@ class SubtopicDao {
         subtopic.summary,
         subtopic.conceptCount,
         subtopic.completed ? 1 : 0,
-        subtopic.previousSubtopicId,
-        subtopic.nextSubtopicId,
-        subtopic.topicId,
-        subtopic.id,
+        subtopic.order,
+        subtopic.id
       ],
     );
   }

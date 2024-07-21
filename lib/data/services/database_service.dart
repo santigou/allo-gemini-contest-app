@@ -31,7 +31,7 @@ class DatabaseService {
   Future<void> _createTables(Database db) async {
     await db.execute('''
       CREATE TABLE languages (
-        id TEXT PRIMARY KEY,
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
         name TEXT
         image TEXT
       )
@@ -39,7 +39,7 @@ class DatabaseService {
 
     await db.execute('''
       CREATE TABLE topics (
-        id TEXT PRIMARY KEY,
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
         languageId INTEGER,
         name TEXT,
         description TEXT,
@@ -52,7 +52,7 @@ class DatabaseService {
 
     await db.execute('''
       CREATE TABLE subtopics (
-        id TEXT PRIMARY KEY,
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
         topicId INTEGER,
         name TEXT,
         description TEXT,
@@ -60,15 +60,14 @@ class DatabaseService {
         summary TEXT,
         conceptCount INTEGER,
         completed INTEGER,
-        previousSubtopicId INTEGER,
-        nextSubtopicId INTEGER,
+        order INTEGER,
         FOREIGN KEY (topicId) REFERENCES topics (id)
       )
     ''');
 
     await db.execute('''
       CREATE TABLE concepts (
-        id TEXT PRIMARY KEY,
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
         subtopicId INTEGER,
         name TEXT,
         explanation TEXT,
@@ -79,7 +78,7 @@ class DatabaseService {
 
     await db.execute('''
       CREATE TABLE questions (
-        id TEXT PRIMARY KEY,
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
         subtopicId INTEGER,
         questionDescription TEXT,
         possibleAnswers TEXT,

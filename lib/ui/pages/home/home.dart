@@ -2,6 +2,7 @@ import 'dart:convert';
 import 'dart:math';
 import 'package:flutter/material.dart';
 import 'package:gemini_proyect/domain/services/api_service.dart';
+import 'package:gemini_proyect/domain/viewmodels/start_topic_viewmodel.dart';
 import 'package:gemini_proyect/ui/pages/playground/steps_screen.dart';
 
 class Home extends StatefulWidget {
@@ -108,12 +109,12 @@ class _HomeState extends State<Home> {
     );
     final response = await widget.apiService.geminiApiCall(apiPrompt);
     print(response);
-    final jsonResponse = jsonDecode(response);
+    final startTopicViewModel jsonResponse = startTopicViewModel.fromMap(jsonDecode(response));
     //TODO eliminar prints y manejo de errores
     Navigator.push(
       context,
       MaterialPageRoute(
-        builder: (context) => StepsScreen(steps: jsonResponse.subtopics().map((s) => s.name).ToArray()),
+        builder: (context) => StepsScreen(steps: jsonResponse.subtopics.map((s) => s.name).toList()),
       ),
     );
   }

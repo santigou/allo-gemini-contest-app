@@ -1,7 +1,7 @@
 import 'package:flutter/cupertino.dart';
 
 class Question {
-  String id;
+  int id;
   String questionDescription;
   String possibleAnswer;
   String subtopicId;
