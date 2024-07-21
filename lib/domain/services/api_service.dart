@@ -30,4 +30,39 @@ class ApiService{
       return 'Error: $e';
     }
   }
+
+  String getTopicPrompt(String language, {String? userPrompt}) {
+    return '''
+    The user want to practice $language with 
+    ${userPrompt == null ? "A random topic" : "the following topic: \"$userPrompt\""}.
+    Give the necessary steps as subtopics to complete the objective your
+    response must be a JSON such as the following:
+    {
+      "name":(Give a brief name to the topic maximum 5 words),
+      "description": (Give a description about the topic),
+      "objectives": (Give a list of objectives to fulfill this topic divided by -),
+      "summary": (Give a brief explanation about the topic and what the user is going to learn),
+      "subtopics":[
+        {
+          "order": 1,
+          "name": (Give a brief name to the subtopic maximum 5 words),
+          "objectives": (Give a list of objectives to fulfill this topic divided by -),
+          "description": (Give a description about the subtopic),
+          "summary": (Give a brief explanation about the topic and what the user is going to learn),
+        },
+        ...
+        ,
+        {
+          "order": n,
+          "name": (Give a brief name to the subtopic maximum 5 words),
+          "objectives": (Give a list of objectives to fulfill this topic divided by -),
+          "description": (Give a description about the subtopic),
+          "summary": (Give a brief explanation about the topic and what the user is going to learn),
+        },
+      ]
+    }
+    Keep on mind that the last subtopic must be the practice module about all the 
+    topic.
+    ''';
+  }
 }

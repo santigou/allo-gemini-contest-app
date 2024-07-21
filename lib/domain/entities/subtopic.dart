@@ -7,8 +7,7 @@ class Subtopic {
   int conceptCount;
   bool completed;
   String? previousSubtopicId; // Clave foránea al subtema anterior
-  String?
-  nextSubtopicId; // Clave foránea al subtema siguiente
+  String? nextSubtopicId; // Clave foránea al subtema siguiente
   String topicId; // Clave foránea al tema
 
   Subtopic({
