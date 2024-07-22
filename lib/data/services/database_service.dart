@@ -85,5 +85,12 @@ class DatabaseService {
         FOREIGN KEY (subtopicId) REFERENCES subtopics (id)
       )
     ''');
+
+    await db.execute('''
+    INSERT INTO languages (name,image)
+    VALUES ('English','English.png'),
+    ('Spanish','English.png'),
+    ('French','English.png')
+    ''');
   }
 }

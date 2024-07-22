@@ -1,5 +1,5 @@
 class Topic {
-  int id;
+  int? id;
   String name;
   String description;
   String objectives;
@@ -8,7 +8,7 @@ class Topic {
   int subtopicCount;
 
   Topic({
-    required this.id,
+    this.id,
     required this.name,
     required this.description,
     required this.objectives,

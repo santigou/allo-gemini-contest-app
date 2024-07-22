@@ -75,7 +75,7 @@ class _HomeState extends State<Home> {
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
                   ElevatedButton.icon(
-                    onPressed: setRandomText,
+                    onPressed: _callApi,
                     icon: const Icon(Icons.auto_awesome),
                     label: const Text('Random'),
                     style: ElevatedButton.styleFrom(
@@ -102,7 +102,7 @@ class _HomeState extends State<Home> {
   }
 
   Future<void> _callApi() async{
-    final userPrompt = _controller.text;
+    final userPrompt = _controller.text == ""? null: _controller.text;
     final apiPrompt = widget.apiService.getTopicPrompt(
         "English",
         userPrompt: userPrompt
@@ -110,6 +110,7 @@ class _HomeState extends State<Home> {
     final response = await widget.apiService.geminiApiCall(apiPrompt);
     print(response);
     final startTopicViewModel jsonResponse = startTopicViewModel.fromMap(jsonDecode(response));
+
     //TODO eliminar prints y manejo de errores
     Navigator.push(
       context,

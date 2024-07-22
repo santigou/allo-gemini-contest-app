@@ -36,7 +36,7 @@ class ApiService{
     The user want to practice $language with 
     ${userPrompt == null ? "A random topic" : "the following topic: \"$userPrompt\""}.
     Give the necessary steps as subtopics to complete the objective your
-    response must be a JSON such as the following:
+    response must return a json with as the following example:
     {
       "name":(Give a brief name to the topic maximum 5 words),
       "description": (Give a description about the topic),
