@@ -14,7 +14,6 @@ class Home extends StatefulWidget {
 }
 
 class _HomeState extends State<Home> {
-
   final TextEditingController _controller = TextEditingController();
   final List<String> randomTextList = [
     "Quiero prepararme para una entrevista como programador backend junior en ingles",
@@ -23,7 +22,7 @@ class _HomeState extends State<Home> {
     "Tendre un examen oral en portuges, soy estudiante de universidad"
   ];
 
-  void setRandomText(){
+  void setRandomText() {
     final random = Random();
     final randomText = randomTextList[random.nextInt(randomTextList.length)];
     setState(() {
@@ -75,11 +74,12 @@ class _HomeState extends State<Home> {
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
                   ElevatedButton.icon(
-                    onPressed: _callApi,
+                    onPressed: setRandomText,
                     icon: const Icon(Icons.auto_awesome),
                     label: const Text('Random'),
                     style: ElevatedButton.styleFrom(
-                      padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 20, vertical: 12),
                     ),
                   ),
                   const SizedBox(width: 20),
@@ -88,7 +88,8 @@ class _HomeState extends State<Home> {
                     icon: const Icon(Icons.play_arrow),
                     label: const Text('Iniciar'),
                     style: ElevatedButton.styleFrom(
-                      padding: const EdgeInsets.symmetric(horizontal: 50, vertical: 16),
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 50, vertical: 16),
                     ),
                   ),
                 ],
@@ -97,25 +98,28 @@ class _HomeState extends State<Home> {
           ),
         ),
       ),
-
     );
   }
 
-  Future<void> _callApi() async{
-    final userPrompt = _controller.text == ""? null: _controller.text;
-    final apiPrompt = widget.apiService.getTopicPrompt(
-        "English",
-        userPrompt: userPrompt
-    );
+  Future<void> _callApi() async {
+    final userPrompt = _controller.text == "" ? null : _controller.text;
+    final apiPrompt =
+        widget.apiService.getTopicPrompt("English", userPrompt: userPrompt);
     final response = await widget.apiService.geminiApiCall(apiPrompt);
     print(response);
-    final startTopicViewModel jsonResponse = startTopicViewModel.fromMap(jsonDecode(response));
+    //final startTopicViewModel jsonResponse = startTopicViewModel.fromMap(jsonDecode(response));
 
-    //TODO eliminar prints y manejo de errores
+    final Map<String, dynamic> decodedData = json.decode(response);
+    final List<Map<String, dynamic>> steps = (decodedData['subtopics'] as List)
+        .map((subtopic) =>
+            {'name': subtopic['name'], 'summary': subtopic['summary'], 'order': subtopic['order']})
+        .toList();
+    print(steps);
     Navigator.push(
       context,
       MaterialPageRoute(
-        builder: (context) => StepsScreen(steps: jsonResponse.subtopics.map((s) => s.name).toList()),
+        builder: (context) => StepsScreen(
+            steps: steps),
       ),
     );
   }
@@ -129,5 +133,4 @@ class _HomeState extends State<Home> {
       return [];
     }
   }
-
 }
