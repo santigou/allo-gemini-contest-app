@@ -119,7 +119,7 @@ class _HomeState extends State<Home> {
       context,
       MaterialPageRoute(
         builder: (context) => StepsScreen(
-            steps: steps),
+            steps: steps, classTopicName: decodedData['name'],),
       ),
     );
   }

@@ -1,14 +1,16 @@
 import 'package:flutter/material.dart';
+import 'package:gemini_proyect/ui/pages/playground/chat/chat_screen.dart';
 
 class StepsScreen extends StatelessWidget{
   final List<Map<String, dynamic>> steps;
-  const StepsScreen({super.key, required this.steps});
+  final String classTopicName;
+  const StepsScreen({super.key, required this.steps, required this.classTopicName});
   //TODO organizar el camino
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Steps to Learn English'),
+        title: Text(classTopicName),
       ),
       body: Padding(
         padding: const EdgeInsets.all(15.0),
@@ -55,7 +57,18 @@ class StepsScreen extends StatelessWidget{
                       padding: const EdgeInsets.all(16.0),
                       child: ElevatedButton(
                         onPressed: () {
-                          // Acción al presionar el botón
+                          Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                  builder: (context) => ChatScreen(
+                                      classTopic: {
+                                        'order': steps[index]['order'],
+                                        'name': steps[index]['name'],
+                                        'summary': steps[index]['summary']
+                                      }
+                                  )
+                              )
+                          );
                         },
                         child: const Text('Iniciar'),
                       ),
