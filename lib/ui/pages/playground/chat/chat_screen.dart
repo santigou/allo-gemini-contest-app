@@ -36,8 +36,20 @@ class _ChatScreenState extends State<ChatScreen> {
             child: ListView.builder(
               itemCount: _messages.length,
               itemBuilder: (context, index) {
-                return ListTile(
-                  title: Text(_messages[index]),
+                return Align(
+                  alignment: Alignment.bottomRight,
+                  child: Container(
+                    margin: const EdgeInsets.symmetric(vertical: 5, horizontal: 10),
+                    padding: const EdgeInsets.all(15),
+                    decoration: BoxDecoration(
+                      color: Colors.blueAccent,
+                      borderRadius: BorderRadius.circular(15),
+                    ),
+                    child: Text(
+                      _messages[index],
+                      style: const TextStyle(color: Colors.white),
+                    ),
+                  ),
                 );
               },
             ),
@@ -45,14 +57,14 @@ class _ChatScreenState extends State<ChatScreen> {
 
           // Message buttons and Microphone
           Padding(
-            padding: const EdgeInsets.all(8.0),
+            padding: const EdgeInsets.all(15.0),
             child: Row(
               children: [
                 Expanded(
                   child: TextField(
                     controller: _controller,
                     decoration: const InputDecoration(
-                      hintText: 'Type a message',
+                      hintText: 'Escribe un mensaje...',
                       border: OutlineInputBorder(),
                     ),
                   ),
