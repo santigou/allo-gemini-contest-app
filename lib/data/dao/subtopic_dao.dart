@@ -24,9 +24,9 @@ class SubtopicDao {
     return null;
   }
 
-  Future<void> insertSubtopic(Subtopic subtopic) async {
+  Future<int> insertSubtopic(Subtopic subtopic) async {
     final db = await DatabaseService.instance.database;
-    await db.rawInsert(
+    return await db.rawInsert(
       'INSERT INTO subtopics( name, description, objectives, summary, conceptCount, completed, previousSubtopicId, nextSubtopicId, topicId) VALUES(?, ?, ?, ?, ?, ?, ?, ?, ?, ?)',
       [
         subtopic.name,

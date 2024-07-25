@@ -1,5 +1,5 @@
 class Subtopic {
-  int id;
+  int? id;
   String name;
   String description;
   String objectives;
@@ -10,7 +10,7 @@ class Subtopic {
   int topicId; // Clave foránea al tema
 
   Subtopic({
-    required this.id,
+    this.id,
     required this.name,
     required this.description,
     required this.objectives,

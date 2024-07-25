@@ -110,6 +110,7 @@ class _HomeState extends State<Home> {
     //final startTopicViewModel jsonResponse = startTopicViewModel.fromMap(jsonDecode(response));
 
     final Map<String, dynamic> decodedData = json.decode(response);
+    //TODO: ADD THE SUBTOPPIC AND TOPIC CREATION CALL METHOD
     final List<Map<String, dynamic>> steps = (decodedData['subtopics'] as List)
         .map((subtopic) =>
             {'name': subtopic['name'], 'summary': subtopic['summary'], 'order': subtopic['order']})
