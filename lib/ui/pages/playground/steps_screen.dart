@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:gemini_proyect/ui/pages/playground/chat/chat_screen.dart';
+import 'package:gemini_proyect/ui/pages/chat/chat_screen.dart';
 
 class StepsScreen extends StatelessWidget{
   final List<Map<String, dynamic>> steps;
