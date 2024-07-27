@@ -35,4 +35,14 @@ class TopicService{
       return ResponseModel(isError: true, message: ex.toString());
     }
   }
+
+  Future<List<Topic>> getAllTopics({int? languageId}) async {
+    try {
+      List<Topic> topics = await _topicDao.getAllTopics(languageId: languageId?.toString());
+      return topics;
+    } catch (e) {
+      print("Error al obtener los tópicos: $e");
+      return [];
+    }
+  }
 }

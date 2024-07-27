@@ -27,7 +27,7 @@ class TopicDao {
   Future<int> insertTopic(Topic topic) async {
     final db = await DatabaseService.instance.database;
     return await db.rawInsert(
-      'INSERT INTO topics(name, description, objectives, languageId, summary, subtopicCount) VALUES(?, ?, ?, ?, ?, ?, ?)',
+      'INSERT INTO topics(name, description, objectives, languageId, summary, subtopicCount) VALUES(?, ?, ?, ?, ?, ?)',
       [
         topic.name,
         topic.description,

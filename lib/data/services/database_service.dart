@@ -19,8 +19,10 @@ class DatabaseService {
   Future<Database> getDatabase() async {
     final databaseDirPath = await getDatabasesPath();
     final databasePath = join(databaseDirPath,"database.db");
+    print(databasePath);
     final database = await openDatabase(
         databasePath,
+        version: 1,
         onCreate: (db, version) async {
           await _createTables(db);
         }
@@ -32,7 +34,7 @@ class DatabaseService {
     await db.execute('''
       CREATE TABLE languages (
         id INTEGER PRIMARY KEY AUTOINCREMENT,
-        name TEXT
+        name TEXT,
         image TEXT
       )
     ''');
@@ -60,7 +62,7 @@ class DatabaseService {
         summary TEXT,
         conceptCount INTEGER,
         completed INTEGER,
-        order INTEGER,
+        topicOrder INTEGER,
         FOREIGN KEY (topicId) REFERENCES topics (id)
       )
     ''');
