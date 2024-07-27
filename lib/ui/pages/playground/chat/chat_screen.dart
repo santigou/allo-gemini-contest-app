@@ -30,58 +30,74 @@ class _ChatScreenState extends State<ChatScreen> {
       ),
 
       // Print Messages
-      body: Column(
+      body: Stack(
         children: [
-          Expanded(
-            child: ListView.builder(
-              itemCount: _messages.length,
-              itemBuilder: (context, index) {
-                return Align(
-                  alignment: Alignment.bottomRight,
-                  child: Container(
-                    margin: const EdgeInsets.symmetric(vertical: 5, horizontal: 10),
-                    padding: const EdgeInsets.all(15),
-                    decoration: BoxDecoration(
-                      color: Colors.blueAccent,
-                      borderRadius: BorderRadius.circular(15),
-                    ),
-                    child: Text(
-                      _messages[index],
-                      style: const TextStyle(color: Colors.white),
-                    ),
-                  ),
-                );
-              },
+          // Background image
+          Container(
+            decoration: BoxDecoration(
+              image: DecorationImage(
+                image: AssetImage('assets/background.jpg'), // Ruta de tu imagen
+                fit: BoxFit.cover,
+              ),
             ),
           ),
 
-          // Message buttons and Microphone
-          Padding(
-            padding: const EdgeInsets.all(15.0),
-            child: Row(
-              children: [
-                Expanded(
-                  child: TextField(
-                    controller: _controller,
-                    decoration: const InputDecoration(
-                      hintText: 'Escribe un mensaje...',
-                      border: OutlineInputBorder(),
-                    ),
-                  ),
-                ),
-                IconButton(
-                  icon: const Icon(Icons.send),
-                  onPressed: _sendMessage,
-                ),
-                IconButton(
-                  icon: const Icon(Icons.mic),
-                  onPressed: () {
-                    // Implementación del botón de micrófono
+          // Chat messages and input field
+          Column(
+            children: [
+              Expanded(
+                child: ListView.builder(
+                  itemCount: _messages.length,
+                  itemBuilder: (context, index) {
+                    return Align(
+                      alignment: Alignment.bottomRight,
+                      child: Container(
+                        margin: const EdgeInsets.symmetric(
+                            vertical: 5, horizontal: 10),
+                        padding: const EdgeInsets.all(15),
+                        decoration: BoxDecoration(
+                          color: Colors.blueAccent,
+                          borderRadius: BorderRadius.circular(15),
+                        ),
+                        child: Text(
+                          _messages[index],
+                          style: const TextStyle(color: Colors.white),
+                        ),
+                      ),
+                    );
                   },
                 ),
-              ],
-            ),
-          ),
+              ),
+
+              // Message buttons and Microphone
+              Padding(
+                padding: const EdgeInsets.all(15.0),
+                child: Row(
+                  children: [
+                    Expanded(
+                      child: TextField(
+                        controller: _controller,
+                        decoration: const InputDecoration(
+                          hintText: 'Escribe un mensaje...',
+                          border: OutlineInputBorder(),
+                        ),
+                      ),
+                    ),
+                    IconButton(
+                      icon: const Icon(Icons.send),
+                      onPressed: _sendMessage,
+                    ),
+                    IconButton(
+                      icon: const Icon(Icons.mic),
+                      onPressed: () {
+                        // Implementación del botón de micrófono
+                      },
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          )
         ],
       ),
     );
