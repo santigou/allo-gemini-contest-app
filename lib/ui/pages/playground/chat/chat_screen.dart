@@ -36,7 +36,7 @@ class _ChatScreenState extends State<ChatScreen> {
           Container(
             decoration: BoxDecoration(
               image: DecorationImage(
-                image: AssetImage('assets/background.jpg'), // Ruta de tu imagen
+                image: AssetImage('assets/moto.jpg'), // Ruta de tu imagen
                 fit: BoxFit.cover,
               ),
             ),
