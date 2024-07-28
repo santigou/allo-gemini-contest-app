@@ -27,9 +27,9 @@ class Subtopic {
       description: map['description'] as String,
       objectives: map['objectives'] as String,
       summary: map['summary'] as String,
-      conceptCount: map['conceptCount'] as int,
+      conceptCount: map['conceptCount'] ?? 0,
       completed: map['completed'] == 1, // Convert integer back to boolean
-      order: map['order'] as int,
+      order: map['topicOrder'] as int,
       topicId: map['topicId'] as int,
   );
 }

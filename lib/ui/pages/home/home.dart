@@ -1,34 +1,50 @@
 import 'dart:convert';
 import 'dart:math';
+
 import 'package:flutter/material.dart';
-import 'package:gemini_proyect/data/services/database_service.dart';
-import 'package:gemini_proyect/domain/services/api_service.dart';
-import 'package:gemini_proyect/domain/services/topic_service.dart';
-import 'package:gemini_proyect/domain/viewmodels/start_topic_viewmodel.dart';
 import 'package:gemini_proyect/ui/pages/home/widgets/languages.dart';
 import 'package:gemini_proyect/ui/pages/home/widgets/topics_list.dart';
-import 'package:gemini_proyect/ui/pages/playground/steps_screen.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
+import '../../../data/services/database_service.dart';
 import '../../../domain/entities/response_model.dart';
+import '../../../domain/services/api_service.dart';
+import '../../../domain/services/subtopic_service.dart';
+import '../../../domain/services/topic_service.dart';
+import '../../../domain/viewmodels/start_topic_viewmodel.dart';
+import '../../../domain/viewmodels/subtopic_viewmodel.dart';
+import '../playground/steps_screen.dart';
 
 class Home extends StatefulWidget {
   final ApiService apiService;
   final TopicService topicService;
+  final SubtopicService subtopicService;
   final DatabaseService databaseService;
-  const Home({super.key, required this.apiService, required this.topicService, required this.databaseService});
+
+  const Home({
+    super.key,
+    required this.apiService,
+    required this.topicService,
+    required this.databaseService,
+    required this.subtopicService,
+  });
 
   @override
   State<Home> createState() => _HomeState();
 }
 
 class _HomeState extends State<Home> {
+  final Future<SharedPreferences> _prefs = SharedPreferences.getInstance();
   final TextEditingController _controller = TextEditingController();
   final List<String> randomTextList = [
     "Quiero prepararme para una entrevista como programador backend junior en ingles",
-    "Voy a trabajar como mecero en Italia que necesito saber?",
-    "Quiero aprender ingles para responder correctamente a mi profesor",
-    "Tendre un examen oral en portuges, soy estudiante de universidad"
+    "Voy a trabajar como mesero en Italia, ¿qué necesito saber?",
+    "Quiero aprender inglés para responder correctamente a mi profesor",
+    "Tendré un examen oral en portugués, soy estudiante de universidad",
   ];
+
+  ValueNotifier<int> languageNotifier = ValueNotifier<int>(1);
+  String? language;
 
   void setRandomText() {
     final random = Random();
@@ -42,7 +58,6 @@ class _HomeState extends State<Home> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(),
-      // Menu
       drawer: const Drawer(
         child: Column(
           children: [
@@ -62,21 +77,27 @@ class _HomeState extends State<Home> {
           ],
         ),
       ),
-
-      //Cuadro de texto y botones
       body: Center(
         child: Padding(
           padding: const EdgeInsets.all(16.0),
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              LanguageSelector(), // Agrega el widget LanguageSelector aquí
+              ExpansionTile(
+                onExpansionChanged: _getLanguageSelected,//TODO Check to change this
+                title: Text(language??'Select Language'),
+                children: [
+                  LanguageSelector(
+                    languageNotifier: languageNotifier,
+                  ),
+                ],
+              ),
               const SizedBox(height: 20),
               TextField(
                 controller: _controller,
                 decoration: const InputDecoration(
                   border: OutlineInputBorder(),
-                  labelText: 'What do you want do learn...',
+                  labelText: 'What do you want to learn...',
                 ),
               ),
               const SizedBox(height: 20),
@@ -84,12 +105,14 @@ class _HomeState extends State<Home> {
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
                   ElevatedButton.icon(
-                    onPressed: setRandomText,
+                    onPressed: _callEmptyApi,
                     icon: const Icon(Icons.auto_awesome),
                     label: const Text('Random'),
                     style: ElevatedButton.styleFrom(
                       padding: const EdgeInsets.symmetric(
-                          horizontal: 20, vertical: 12),
+                        horizontal: 20,
+                        vertical: 12,
+                      ),
                     ),
                   ),
                   const SizedBox(width: 20),
@@ -99,12 +122,25 @@ class _HomeState extends State<Home> {
                     label: const Text('Iniciar'),
                     style: ElevatedButton.styleFrom(
                       padding: const EdgeInsets.symmetric(
-                          horizontal: 50, vertical: 16),
+                        horizontal: 50,
+                        vertical: 16,
+                      ),
                     ),
                   ),
                 ],
               ),
-              TopicsList(topicService: widget.topicService, languageId: 1,),
+              Expanded(child:
+              ValueListenableBuilder<int>(
+                valueListenable: languageNotifier,
+                builder: (context, languageId, child) {
+                  return TopicsList(
+                    topicService: widget.topicService,
+                    subtopicService: widget.subtopicService,
+                    languageId: languageId,
+                  );
+                },
+              ),
+              )
             ],
           ),
         ),
@@ -112,42 +148,77 @@ class _HomeState extends State<Home> {
     );
   }
 
+  Future<int> _getLanguageSelectedId() async {
+    final SharedPreferences prefs = await _prefs;
+    try {
+      return prefs.getInt("languageId") ?? 1;
+    } catch (e) {
+      return 1;
+    }
+  }
+
+  Future<void> _getLanguageSelected(bool value) async {
+    final SharedPreferences prefs = await _prefs;
+    try {
+      String found = prefs.getString("languageName") ?? "Select language";
+      setState(() {
+        language = found;
+      });
+    } catch (e) {
+    }
+  }
+
   Future<void> _callApi() async {
+    final SharedPreferences prefs = await _prefs;
     final userPrompt = _controller.text.isEmpty ? null : _controller.text;
-    final apiPrompt = widget.apiService.getTopicPrompt("English", userPrompt: userPrompt);
+    final existingTopics = await widget.topicService.getAllTopics(languageId: prefs.getInt("languageId") ?? 1);
+    final String existingTopicsString = existingTopics.map((topic) => topic.name).reduce((topics, topic) => "$topics,$topic");
+    final apiPrompt = widget.apiService.getTopicPrompt(prefs.getString("languageName") ?? "English", userPrompt: userPrompt, existingTopics: existingTopicsString);
     final response = await widget.apiService.geminiApiCall(apiPrompt);
 
     final Map<String, dynamic> decodedData = json.decode(response);
 
     startTopicViewModel topicViewModel = startTopicViewModel.fromMap(decodedData);
-    int languageId = 1; // TODO: Obtén el id del idioma seleccionado
+    int languageId = await _getLanguageSelectedId();
 
     ResponseModel responseModel = await widget.topicService.createTopic(topicViewModel, languageId);
 
-    if (!responseModel.isError) {
-      int topicId = responseModel.result;
-      List<Map<String, dynamic>> steps = (decodedData['subtopics'] as List)
-          .map((subtopic) => {'name': subtopic['name'], 'summary': subtopic['summary'], 'order': subtopic['order']})
-          .toList();
-
-      Navigator.push(
-        context,
-        MaterialPageRoute(
-          builder: (context) => StepsScreen(
-            steps: steps,
-            classTopicName: decodedData['name'],
-          ),
-        ),
-      );
-    } else {
+    if (responseModel.isError) {
       print("Error: ${responseModel.message}");
+      return;
     }
+    int topicId = responseModel.result;
+    List<SubtopicViewmodel> steps = (decodedData['subtopics'] as List)
+        .map((subtopic) => SubtopicViewmodel.fromMap(subtopic))
+        .toList();
+
+    responseModel = await widget.subtopicService.createManySubtopics(steps, topicId);
+
+    if (responseModel.isError) {
+      print("Error: ${responseModel.message}");
+      return;
+    }
+
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => StepsScreen(
+          steps: responseModel.result,
+          classTopicName: decodedData['name'],
+        ),
+      ),
+    );
   }
+
+  Future<void> _callEmptyApi() async {
+    _controller.text = "";
+    await _callApi();
+  }
+
   List<String> _parseResponse(String response) {
     try {
       return List<String>.from(jsonDecode(response));
     } catch (e) {
-      //TODO eliminar print
       print("Error al decodificar la respuesta: $e");
       return [];
     }

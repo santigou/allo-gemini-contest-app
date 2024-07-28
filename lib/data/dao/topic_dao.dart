@@ -6,7 +6,7 @@ class TopicDao {
 
   Future<List<Topic>> getAllTopics({String? languageId}) async {
     final db = await DatabaseService.instance.database;
-    final List<Map<String, dynamic>> maps = await db.rawQuery('SELECT * FROM topics ${(languageId == null)?'': "WHERE languageId = $languageId"}');
+    final List<Map<String, dynamic>> maps = await db.rawQuery('SELECT * FROM topics ${(languageId == null)?'': "WHERE languageId = $languageId"} ORDER BY id DESC');
     return List.generate(maps.length, (i) {
       return Topic.fromSqfliteDatabase(maps[i]);
     });

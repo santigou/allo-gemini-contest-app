@@ -13,6 +13,7 @@ class SubtopicService{
     try {
 
       List<int> ids = [];
+      List<Subtopic> subtopicList = [];
 
       for(SubtopicViewmodel vm in subtopics)
       {
@@ -28,13 +29,27 @@ class SubtopicService{
 
         int lastId = await _subtopicDao.insertSubtopic(subtopic);
         ids.add(lastId);
+        subtopicList.add(subtopic);
       };
 
       return ResponseModel(isError: false,
           message: "Topic created successfully",
-          result: topicId );
+          result: subtopicList);
     } on Exception catch (ex){
       return ResponseModel(isError: true, message: ex.toString());
+    }
+  }
+
+
+  Future<List<Subtopic>> getSubtopicsByTopicId(int topicId) async {
+    try {
+      print(topicId);
+      List<Subtopic> subtopics = await _subtopicDao.getAllSubtopics(topicId: topicId);
+
+      return subtopics;
+    } catch (e) {
+      print("Error al obtener los subtemas: $e");
+      return [];
     }
   }
 }
