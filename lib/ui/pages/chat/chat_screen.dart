@@ -1,4 +1,7 @@
+import 'dart:convert';
+
 import 'package:flutter/material.dart';
+import 'package:gemini_proyect/domain/services/api_service.dart';
 
 class ChatScreen extends StatefulWidget {
   final Map<String, dynamic> classTopic;
@@ -59,18 +62,19 @@ class _ChatScreenState extends State<ChatScreen> {
                   ),
                   itemCount: _messages.length,
                   itemBuilder: (context, index) {
+                    final message = _messages[index];
                     return Align(
-                      alignment: Alignment.bottomRight,
+                      alignment: message.isUser ? Alignment.bottomRight:Alignment.bottomLeft,
                       child: Container(
                         margin: const EdgeInsets.symmetric(
                             vertical: 5, horizontal: 10),
                         padding: const EdgeInsets.all(15),
                         decoration: BoxDecoration(
-                          color: Colors.white,
+                          color: message.isUser ? Colors.blueAccent : Colors.greenAccent,
                           borderRadius: BorderRadius.circular(15),
                         ),
                         child: Text(
-                          _messages[index],
+                          message.text,
                           style: const TextStyle(
                               color: Colors.black),
                         ),
@@ -136,12 +140,14 @@ class _ChatScreenState extends State<ChatScreen> {
   }
 
   Future<void> _callApi(String userMessage) async {
+    //TODO: Cambiar a inyection?
+    ApiService apiService = new ApiService();
     final userPrompt = userMessage.isEmpty ? null : userMessage;
-    final apiPrompt = widget.apiService.getTopicPrompt("English", userPrompt: userPrompt);
-    final response = await widget.apiService.geminiApiCall(apiPrompt);
+    final apiPrompt = apiService.getTopicPrompt("English", userPrompt: userPrompt);
+    final response = await apiService.geminiApiCall(apiPrompt);
 
     final Map<String, dynamic> decodedData = json.decode(response);
-    final apiMessage = decodedData['message']; // Asegúrate de ajustar esto según la estructura de tu respuesta
+    final apiMessage = decodedData['message'];
 
     setState(() {
       _messages.add(Message(text: apiMessage, isUser: false));
