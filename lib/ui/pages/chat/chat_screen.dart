@@ -2,6 +2,9 @@ import 'dart:convert';
 
 import 'package:flutter/material.dart';
 import 'package:gemini_proyect/domain/services/api_service.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+
+import '../../../domain/services/message_service.dart';
 
 class ChatScreen extends StatefulWidget {
   final Map<String, dynamic> classTopic;
@@ -11,14 +14,8 @@ class ChatScreen extends StatefulWidget {
   State<ChatScreen> createState() => _ChatScreenState();
 }
 
-class Message {
-  final String text;
-  final bool isUser;
-
-  Message({required this.text, required this.isUser});
-}
-
 class _ChatScreenState extends State<ChatScreen> {
+  final Future<SharedPreferences> _prefs = SharedPreferences.getInstance();
   final List<Message> _messages = [];
   final TextEditingController _controller = TextEditingController();
 
@@ -28,9 +25,14 @@ class _ChatScreenState extends State<ChatScreen> {
         _messages.add(Message(text: _controller.text, isUser: true));
         _controller.clear();
       });
-      _callApi(_controller.text);
+      _callApi();
       _controller.clear();
     }
+  }
+
+  @override void initState() {
+    super.initState();
+    _callApi();
   }
 
   @override
@@ -70,13 +72,13 @@ class _ChatScreenState extends State<ChatScreen> {
                             vertical: 5, horizontal: 10),
                         padding: const EdgeInsets.all(15),
                         decoration: BoxDecoration(
-                          color: message.isUser ? Colors.blueAccent : Colors.greenAccent,
+                          color: message.isUser ? Colors.blueAccent : Colors.deepPurple,
                           borderRadius: BorderRadius.circular(15),
                         ),
                         child: Text(
                           message.text,
                           style: const TextStyle(
-                              color: Colors.black),
+                              color: Colors.white),
                         ),
                       ),
                     );
@@ -139,18 +141,29 @@ class _ChatScreenState extends State<ChatScreen> {
     );
   }
 
-  Future<void> _callApi(String userMessage) async {
+  Future<void> _callApi() async {
     //TODO: Cambiar a inyection?
     ApiService apiService = new ApiService();
-    final userPrompt = userMessage.isEmpty ? null : userMessage;
-    final apiPrompt = apiService.getTopicPrompt("English", userPrompt: userPrompt);
-    final response = await apiService.geminiApiCall(apiPrompt);
 
+    //TODO: Enviar el lenguaje correctamente
+    final SharedPreferences prefs = await _prefs;
+    print("Lenguaje");
+    print(prefs.getString("languageName"));
+
+    final classTopicObjective = widget.classTopic['summary'];
+    final apiPrompt = apiService.getChatPrompt("English", classTopicObjective, _messages);
+    final response = await apiService.geminiApiCall(apiPrompt);
+    print(response);
     final Map<String, dynamic> decodedData = json.decode(response);
     final apiMessage = decodedData['message'];
-
+    final success = decodedData['success'];
     setState(() {
       _messages.add(Message(text: apiMessage, isUser: false));
     });
+    if (success == 'true') {
+      //TODO: desbloquear siguiente nivel y culminar el actual
+      print('El usuario finalizo con exito el nivel');
+    }
+
   }
 }
