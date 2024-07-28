@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
-import 'package:gemini_proyect/ui/pages/chat/chat_screen.dart';
+import 'package:gemini_proyect/domain/entities/subtopic.dart';
+
+import '../chat/chat_screen.dart';
 
 class StepsScreen extends StatelessWidget{
-  final List<Map<String, dynamic>> steps;
+  final List<Subtopic> steps;
   final String classTopicName;
   const StepsScreen({super.key, required this.steps, required this.classTopicName});
   //TODO organizar el camino
@@ -36,7 +38,7 @@ class StepsScreen extends StatelessWidget{
                         borderRadius: BorderRadius.only(topLeft: Radius.circular(7.0), topRight: Radius.circular(7.0))
                       ),
                       child: Text(
-                        '${steps[index]['order']}. ${steps[index]['name']}',
+                        '${steps[index].order}. ${steps[index].name }',
                         style: const TextStyle(
                           color: Colors.white,
                           fontSize: 18,
@@ -47,7 +49,7 @@ class StepsScreen extends StatelessWidget{
                     Padding(
                       padding: const EdgeInsets.all(16.0),
                       child: Text(
-                        steps[index]['summary']!,
+                        steps[index].summary,
                         style: const TextStyle(
                           fontSize: 16,
                         ),
@@ -62,9 +64,9 @@ class StepsScreen extends StatelessWidget{
                               MaterialPageRoute(
                                   builder: (context) => ChatScreen(
                                       classTopic: {
-                                        'order': steps[index]['order'],
-                                        'name': steps[index]['name'],
-                                        'summary': steps[index]['summary']
+                                        'order': steps[index].order,
+                                        'name': steps[index].name,
+                                        'summary': steps[index].summary
                                       }
                                   )
                               )
