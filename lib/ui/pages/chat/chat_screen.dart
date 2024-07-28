@@ -8,16 +8,25 @@ class ChatScreen extends StatefulWidget {
   State<ChatScreen> createState() => _ChatScreenState();
 }
 
+class Message {
+  final String text;
+  final bool isUser;
+
+  Message({required this.text, required this.isUser});
+}
+
 class _ChatScreenState extends State<ChatScreen> {
-  final List<String> _messages = [];
+  final List<Message> _messages = [];
   final TextEditingController _controller = TextEditingController();
 
   void _sendMessage() {
     if (_controller.text.isNotEmpty) {
       setState(() {
-        _messages.add(_controller.text);
+        _messages.add(Message(text: _controller.text, isUser: true));
         _controller.clear();
       });
+      _callApi(_controller.text);
+      _controller.clear();
     }
   }
 
@@ -28,15 +37,13 @@ class _ChatScreenState extends State<ChatScreen> {
         title: Text(widget.classTopic['name']),
         centerTitle: true,
       ),
-
-      // Print Messages
       body: Stack(
         children: [
           // Background image
           Container(
-            decoration: BoxDecoration(
+            decoration: const BoxDecoration(
               image: DecorationImage(
-                image: AssetImage('assets/moto.jpg'), // Ruta de tu imagen
+                image: AssetImage('assets/professor.jpg'),
                 fit: BoxFit.cover,
               ),
             ),
@@ -47,6 +54,9 @@ class _ChatScreenState extends State<ChatScreen> {
             children: [
               Expanded(
                 child: ListView.builder(
+                  padding: const EdgeInsets.only(
+                      bottom: 100
+                  ),
                   itemCount: _messages.length,
                   itemBuilder: (context, index) {
                     return Align(
@@ -56,50 +66,85 @@ class _ChatScreenState extends State<ChatScreen> {
                             vertical: 5, horizontal: 10),
                         padding: const EdgeInsets.all(15),
                         decoration: BoxDecoration(
-                          color: Colors.blueAccent,
+                          color: Colors.white,
                           borderRadius: BorderRadius.circular(15),
                         ),
                         child: Text(
                           _messages[index],
-                          style: const TextStyle(color: Colors.white),
+                          style: const TextStyle(
+                              color: Colors.black),
                         ),
                       ),
                     );
                   },
                 ),
               ),
+            ],
+          ),
 
-              // Message buttons and Microphone
-              Padding(
-                padding: const EdgeInsets.all(15.0),
-                child: Row(
-                  children: [
-                    Expanded(
-                      child: TextField(
-                        controller: _controller,
-                        decoration: const InputDecoration(
-                          hintText: 'Escribe un mensaje...',
-                          border: OutlineInputBorder(),
+          // Message buttons and Microphone
+          Positioned(
+            bottom: 0,
+            left: 0,
+            right: 0,
+            child: Container(
+              color: Colors
+                  .white,
+              padding: const EdgeInsets.all(15.0),
+              child: Row(
+                children: [
+                  Expanded(
+                    child: TextField(
+                      controller: _controller,
+                      decoration: InputDecoration(
+                        hintText: 'Escribe un mensaje...',
+                        hintStyle: const TextStyle(
+                            color: Colors.black54),
+                        filled: true,
+                        fillColor: Colors
+                            .white,
+                        border: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(15),
+                          borderSide: const BorderSide(
+                              color: Colors.deepPurple, width: 4.0),
                         ),
                       ),
+                      style: const TextStyle(
+                          color: Colors.black),
                     ),
-                    IconButton(
-                      icon: const Icon(Icons.send),
-                      onPressed: _sendMessage,
-                    ),
-                    IconButton(
-                      icon: const Icon(Icons.mic),
-                      onPressed: () {
-                        // Implementación del botón de micrófono
-                      },
-                    ),
-                  ],
-                ),
+                  ),
+                  IconButton(
+                    icon: const Icon(Icons.send),
+                    color: Colors.deepPurple,
+                    onPressed: _sendMessage,
+                  ),
+                  IconButton(
+                    icon: const Icon(Icons.mic),
+                    iconSize: 30,
+                    color: Colors.deepPurple,
+                    onPressed: () {
+                      // Implementación del botón de micrófono
+                    },
+                  ),
+                ],
               ),
-            ],
-          )
+            ),
+          ),
         ],
       ),
     );
+  }
+
+  Future<void> _callApi(String userMessage) async {
+    final userPrompt = userMessage.isEmpty ? null : userMessage;
+    final apiPrompt = widget.apiService.getTopicPrompt("English", userPrompt: userPrompt);
+    final response = await widget.apiService.geminiApiCall(apiPrompt);
+
+    final Map<String, dynamic> decodedData = json.decode(response);
+    final apiMessage = decodedData['message']; // Asegúrate de ajustar esto según la estructura de tu respuesta
+
+    setState(() {
+      _messages.add(Message(text: apiMessage, isUser: false));
+    });
   }
 }
