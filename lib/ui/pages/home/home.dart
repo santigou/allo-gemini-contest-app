@@ -2,12 +2,14 @@ import 'dart:convert';
 import 'dart:math';
 
 import 'package:flutter/material.dart';
+import 'package:gemini_proyect/domain/utils/level.dart';
 import 'package:gemini_proyect/ui/pages/home/widgets/languages.dart';
 import 'package:gemini_proyect/ui/pages/home/widgets/topics_list.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import '../../../data/services/database_service.dart';
 import '../../../domain/entities/response_model.dart';
+import '../../../domain/entities/topic.dart';
 import '../../../domain/services/api_service.dart';
 import '../../../domain/services/subtopic_service.dart';
 import '../../../domain/services/topic_service.dart';
@@ -36,6 +38,7 @@ class Home extends StatefulWidget {
 class _HomeState extends State<Home> {
   final Future<SharedPreferences> _prefs = SharedPreferences.getInstance();
   final TextEditingController _controller = TextEditingController();
+  int _level = 1;
   final List<String> randomTextList = [
     "Quiero prepararme para una entrevista como programador backend junior en ingles",
     "Voy a trabajar como mesero en Italia, ¿qué necesito saber?",
@@ -93,12 +96,28 @@ class _HomeState extends State<Home> {
                 ],
               ),
               const SizedBox(height: 20),
-              TextField(
-                controller: _controller,
-                decoration: const InputDecoration(
-                  border: OutlineInputBorder(),
-                  labelText: 'What do you want to learn...',
-                ),
+              Row(
+                children: [
+                  Expanded(
+                    child: TextField(
+                      controller: _controller,
+                      decoration: const InputDecoration(
+                        border: OutlineInputBorder(),
+                        labelText: 'What do you want to learn...',
+                      ),
+                    ),
+                  ),
+                  const SizedBox(width: 10), // Añade un espacio entre el TextField y el DropdownButton
+                  DropdownButton<int>(
+                    items: const [
+                      DropdownMenuItem<int>(value: 1, child: Text("⭐")),
+                      DropdownMenuItem<int>(value: 2, child: Text("⭐⭐")),
+                      DropdownMenuItem<int>(value: 3, child: Text("⭐⭐⭐")),
+                    ],
+                    onChanged: _onSelectLevel,
+                    value: _level,
+                  ),
+                ],
               ),
               const SizedBox(height: 20),
               Row(
@@ -168,12 +187,25 @@ class _HomeState extends State<Home> {
     }
   }
 
+  void _onSelectLevel (int? selectedLevel){
+    if(selectedLevel is int){
+      setState(() {
+        _level = selectedLevel;
+      });
+    }
+  }
+
   Future<void> _callApi() async {
     final SharedPreferences prefs = await _prefs;
     final userPrompt = _controller.text.isEmpty ? null : _controller.text;
-    final existingTopics = await widget.topicService.getAllTopics(languageId: prefs.getInt("languageId") ?? 1);
-    final String existingTopicsString = existingTopics.map((topic) => topic.name).reduce((topics, topic) => "$topics,$topic");
-    final apiPrompt = widget.apiService.getTopicPrompt(prefs.getString("languageName") ?? "English", userPrompt: userPrompt, existingTopics: existingTopicsString);
+    List<Topic> existingTopics = await widget.topicService.getAllTopics(languageId: prefs.getInt("languageId") ?? 1);
+    List<String> topicNames = existingTopics.map((topic) => topic.name).toList();
+    String topicString = "";
+    if(topicNames.length > 0){
+      topicString = topicNames.reduce((topics, topic) => "$topics,$topic");
+    }
+
+    final apiPrompt = widget.apiService.getTopicPrompt(prefs.getString("languageName") ?? "English", userPrompt: userPrompt, existingTopics: topicString, level: levels[_level]);//TODO ADD LEVEL
     final response = await widget.apiService.geminiApiCall(apiPrompt);
 
     final Map<String, dynamic> decodedData = json.decode(response);
@@ -181,7 +213,7 @@ class _HomeState extends State<Home> {
     startTopicViewModel topicViewModel = startTopicViewModel.fromMap(decodedData);
     int languageId = await _getLanguageSelectedId();
 
-    ResponseModel responseModel = await widget.topicService.createTopic(topicViewModel, languageId);
+    ResponseModel responseModel = await widget.topicService.createTopic(topicViewModel, languageId, _level);
 
     if (responseModel.isError) {
       print("Error: ${responseModel.message}");

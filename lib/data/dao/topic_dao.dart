@@ -27,13 +27,14 @@ class TopicDao {
   Future<int> insertTopic(Topic topic) async {
     final db = await DatabaseService.instance.database;
     return await db.rawInsert(
-      'INSERT INTO topics(name, description, objectives, languageId, summary, subtopicCount) VALUES(?, ?, ?, ?, ?, ?)',
+      'INSERT INTO topics(name, description, objectives, languageId, summary, level, subtopicCount) VALUES(?, ?, ?, ?, ?, ?, ?)',
       [
         topic.name,
         topic.description,
         topic.objectives,
         topic.languageId,
         topic.summary,
+        topic.level,
         topic.subtopicCount,
       ],
     );
@@ -42,12 +43,13 @@ class TopicDao {
   Future<void> updateTopic(Topic topic) async {
     final db = await DatabaseService.instance.database;
     await db.rawUpdate(
-      'UPDATE topics SET name = ?, description = ?, objectives = ?, languageId = ?, summary = ?, subtopicCount = ? WHERE id = ?',
+      'UPDATE topics SET name = ?, description = ?, objectives = ?, languageId = ?, level=?, summary = ?, subtopicCount = ? WHERE id = ?',
       [
         topic.name,
         topic.description,
         topic.objectives,
         topic.languageId,
+        topic.level,
         topic.summary,
         topic.subtopicCount,
         topic.id,

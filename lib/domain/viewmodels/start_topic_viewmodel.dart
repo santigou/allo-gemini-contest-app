@@ -5,6 +5,7 @@ class startTopicViewModel{
   String description;
   String objectives;
   String summary;
+  int level;
   List<SubtopicViewmodel> subtopics;
 
   startTopicViewModel({
@@ -12,6 +13,7 @@ class startTopicViewModel{
     required this.description,
     required this.objectives,
     required this.summary,
+    required this.level,
     required this.subtopics
   });
 
@@ -20,6 +22,7 @@ class startTopicViewModel{
       description: map['description'] as String,
       objectives: map['objectives'] as String,
       summary: map['summary'] as String,
+      level: map['level'] as int,
       subtopics: (map['subtopics'] as List<dynamic>)
           .map((subtopicMap) => SubtopicViewmodel.fromMap(subtopicMap))
           .toList(),

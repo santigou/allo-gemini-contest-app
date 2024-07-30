@@ -19,7 +19,6 @@ class DatabaseService {
   Future<Database> getDatabase() async {
     final databaseDirPath = await getDatabasesPath();
     final databasePath = join(databaseDirPath,"database.db");
-    print(databasePath);
     final database = await openDatabase(
         databasePath,
         version: 1,
@@ -47,6 +46,7 @@ class DatabaseService {
         description TEXT,
         objectives TEXT,
         summary TEXT,
+        level INTEGER,
         subtopicCount INTEGER,
         FOREIGN KEY (languageId) REFERENCES languages (id)
       )
@@ -60,7 +60,6 @@ class DatabaseService {
         description TEXT,
         objectives TEXT,
         summary TEXT,
-        conceptCount INTEGER,
         completed INTEGER,
         topicOrder INTEGER,
         FOREIGN KEY (topicId) REFERENCES topics (id)
@@ -68,13 +67,23 @@ class DatabaseService {
     ''');
 
     await db.execute('''
+      CREATE TABLE chatMessage (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        message TEXT,
+        role TEXT,
+        subtopicId INTEGER,
+        FOREIGN KEY (subtopicId) REFERENCES subtopics (id)
+      )
+    ''');
+
+    await db.execute('''
       CREATE TABLE concepts (
         id INTEGER PRIMARY KEY AUTOINCREMENT,
-        subtopicId INTEGER,
+        messageId INTEGER,
         name TEXT,
         explanation TEXT,
         examples TEXT,
-        FOREIGN KEY (subtopicId) REFERENCES subtopics (id)
+        FOREIGN KEY (messageId) REFERENCES chatMessage (id)
       )
     ''');
 
@@ -90,9 +99,12 @@ class DatabaseService {
 
     await db.execute('''
     INSERT INTO languages (name,image)
-    VALUES ('English','English.png'),
-    ('Spanish','English.png'),
-    ('French','English.png')
+    VALUES ('English','english.png'),
+    ('Spanish','spanish.png'),
+    ('French','french.png'),
+    ('German','german.png'),
+    ('Italian','italian.png'),
+    ('Portuguese','portuguese.png')
     ''');
   }
 }

@@ -28,13 +28,12 @@ class SubtopicDao {
   Future<int> insertSubtopic(Subtopic subtopic) async {
     final db = await DatabaseService.instance.database;
     return await db.rawInsert(
-      'INSERT INTO subtopics( name, description, objectives, summary, conceptCount, completed, topicOrder, topicId) VALUES(?, ?, ?, ?, ?, ?, ?, ?)',
+      'INSERT INTO subtopics( name, description, objectives, summary, completed, topicOrder, topicId) VALUES(?, ?, ?, ?, ?, ?, ?)',
       [
         subtopic.name,
         subtopic.description,
         subtopic.objectives,
         subtopic.summary,
-        subtopic.conceptCount,
         subtopic.completed ? 1 : 0,
         subtopic.order,
         subtopic.topicId,
@@ -45,7 +44,7 @@ class SubtopicDao {
   Future<void> updateSubtopic(Subtopic subtopic) async {
     final db = await DatabaseService.instance.database;
     await db.rawUpdate(
-      'UPDATE subtopics SET name = ?, description =?, objectives = ?, summary = ?, conceptCount = ?, completed = ?, previousSubtopicId = ?, nextSubtopicId = ?, topicId = ? WHERE id = ?',
+      'UPDATE subtopics SET name = ?, description =?, objectives = ?, summary = ?, conceptCount = ?, completed = ?, topicOrder = ?, topicId = ? WHERE id = ?',
       [
         subtopic.name,
         subtopic.description,

@@ -41,10 +41,11 @@ class ApiService {
   }
 
   String getTopicPrompt(String language,
-      {String? userPrompt, String? existingTopics}) {
+      {String? userPrompt, String? level, String? existingTopics}) {
+    print(level);
     return '''
     The user want to learn $language with 
-    ${userPrompt == null ? "(generate a random topic avoid [$existingTopics] topics)" : "the following topic: \"$userPrompt\""}.
+    ${userPrompt == null ? "(generate a random topic avoid [$existingTopics] topics)" : "the following topic: \"$userPrompt\""} with the a $level level.
     Give the necessary steps as subtopics to complete the objective your
     response must return a json with as the following example, ONLY RETURN THE JSON, DON'T ADD ANY OTHER THING (for example not return json{...} or like that):
     {
@@ -52,6 +53,7 @@ class ApiService {
       "description": (Give a description about the topic),
       "objectives": (Give a list of objectives to fulfill this topic divided by -),
       "summary": (Give a brief explanation about the topic and what the user is going to learn),
+      "level": (Give the respective integer for the selectedLevel ($level) 1 for Basic, 2 for Intermediate, 3 for Advanced)
       "subtopics":[
         {
           "order": 1,

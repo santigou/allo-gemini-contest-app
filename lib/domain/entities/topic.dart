@@ -5,6 +5,7 @@ class Topic {
   String objectives;
   int languageId;
   String summary;
+  int level;
   int subtopicCount;
 
   Topic({
@@ -14,6 +15,7 @@ class Topic {
     required this.objectives,
     required this.languageId,
     required this.summary,
+    required this.level,
     required this.subtopicCount,
   });
 
@@ -23,6 +25,7 @@ class Topic {
       description: map['description'] as String,
       objectives: map['objectives'] as String,
       languageId: map['languageId'] as int,
+      level: map['level'] as int,
       summary: map['summary'] as String,
       subtopicCount: map['subtopicCount'] as int,
     );

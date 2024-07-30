@@ -14,7 +14,8 @@ class TopicService{
   //TODO: Change to use ID
   final TopicDao _topicDao = new TopicDao();
 
-  Future<ResponseModel> createTopic(startTopicViewModel topicInfo, int languageId) async {
+  Future<ResponseModel> createTopic(startTopicViewModel topicInfo, int languageId, int level) async {
+    print(level);
     try
     {
       Topic topicToSave = Topic(
@@ -23,6 +24,7 @@ class TopicService{
           objectives: topicInfo.objectives,
           languageId: languageId,
           summary: topicInfo.summary,
+          level: level,
           subtopicCount: topicInfo.subtopics.length);
       int topicId = await _topicDao.insertTopic(topicToSave);
 
