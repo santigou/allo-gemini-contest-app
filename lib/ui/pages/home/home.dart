@@ -86,80 +86,82 @@ class _HomeState extends State<Home> {
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              ExpansionTile(
-                onExpansionChanged: _getLanguageSelected,//TODO Check to change this
-                title: Text(language??'Select Language'),
-                children: [
-                  LanguageSelector(
-                    languageNotifier: languageNotifier,
-                  ),
-                ],
+              TextField(
+                controller: _controller,
+                decoration: const InputDecoration(
+                  border: OutlineInputBorder(),
+                  labelText: 'What do you want to learn...',
+                ),
+                onEditingComplete: () {
+                  if (_controller.text.isEmpty) {
+                    setRandomText();
+                  }
+                },
               ),
               const SizedBox(height: 20),
               Row(
                 children: [
                   Expanded(
-                    child: TextField(
-                      controller: _controller,
-                      decoration: const InputDecoration(
-                        border: OutlineInputBorder(),
-                        labelText: 'What do you want to learn...',
-                      ),
+                    child: DropdownButton<int>(
+                      items: const [
+                        DropdownMenuItem<int>(value: 1, child: Text("English")),
+                        DropdownMenuItem<int>(value: 2, child: Text("Spanish")),
+                        DropdownMenuItem<int>(value: 3, child: Text("French")),
+                      ],
+                      onChanged: (value) {
+                        setState(() {
+                          languageNotifier.value = value!;
+                          language = value == 1
+                              ? "English"
+                              : value == 2
+                              ? "Spanish"
+                              : "French";
+                        });
+                      },
+                      value: languageNotifier.value,
                     ),
                   ),
-                  const SizedBox(width: 10), // Añade un espacio entre el TextField y el DropdownButton
-                  DropdownButton<int>(
-                    items: const [
-                      DropdownMenuItem<int>(value: 1, child: Text("⭐")),
-                      DropdownMenuItem<int>(value: 2, child: Text("⭐⭐")),
-                      DropdownMenuItem<int>(value: 3, child: Text("⭐⭐⭐")),
-                    ],
-                    onChanged: _onSelectLevel,
-                    value: _level,
+                  const SizedBox(width: 10),
+                  Expanded(
+                    child: DropdownButton<int>(
+                      items: const [
+                        DropdownMenuItem<int>(value: 1, child: Text("⭐")),
+                        DropdownMenuItem<int>(value: 2, child: Text("⭐⭐")),
+                        DropdownMenuItem<int>(value: 3, child: Text("⭐⭐⭐")),
+                      ],
+                      onChanged: _onSelectLevel,
+                      value: _level,
+                    ),
+                  ),
+                  const SizedBox(width: 10),
+                  Expanded(
+                    child: ElevatedButton.icon(
+                      onPressed: _callApi,
+                      icon: const Icon(Icons.play_arrow),
+                      label: const Text('Iniciar'),
+                      style: ElevatedButton.styleFrom(
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 10,
+                          vertical: 0,
+                        ),
+                      ),
+                    ),
                   ),
                 ],
               ),
               const SizedBox(height: 20),
-              Row(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  ElevatedButton.icon(
-                    onPressed: _callEmptyApi,
-                    icon: const Icon(Icons.auto_awesome),
-                    label: const Text('Random'),
-                    style: ElevatedButton.styleFrom(
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: 20,
-                        vertical: 12,
-                      ),
-                    ),
-                  ),
-                  const SizedBox(width: 20),
-                  ElevatedButton.icon(
-                    onPressed: _callApi,
-                    icon: const Icon(Icons.play_arrow),
-                    label: const Text('Iniciar'),
-                    style: ElevatedButton.styleFrom(
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: 50,
-                        vertical: 16,
-                      ),
-                    ),
-                  ),
-                ],
+              Expanded(
+                child: ValueListenableBuilder<int>(
+                  valueListenable: languageNotifier,
+                  builder: (context, languageId, child) {
+                    return TopicsList(
+                      topicService: widget.topicService,
+                      subtopicService: widget.subtopicService,
+                      languageId: languageId,
+                    );
+                  },
+                ),
               ),
-              Expanded(child:
-              ValueListenableBuilder<int>(
-                valueListenable: languageNotifier,
-                builder: (context, languageId, child) {
-                  return TopicsList(
-                    topicService: widget.topicService,
-                    subtopicService: widget.subtopicService,
-                    languageId: languageId,
-                  );
-                },
-              ),
-              )
             ],
           ),
         ),
