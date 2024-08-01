@@ -50,7 +50,6 @@ class SubtopicDao {
         subtopic.description,
         subtopic.objectives,
         subtopic.summary,
-        subtopic.conceptCount,
         subtopic.completed ? 1 : 0,
         subtopic.order,
         subtopic.id

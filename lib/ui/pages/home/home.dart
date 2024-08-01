@@ -102,24 +102,7 @@ class _HomeState extends State<Home> {
               Row(
                 children: [
                   Expanded(
-                    child: DropdownButton<int>(
-                      items: const [
-                        DropdownMenuItem<int>(value: 1, child: Text("English")),
-                        DropdownMenuItem<int>(value: 2, child: Text("Spanish")),
-                        DropdownMenuItem<int>(value: 3, child: Text("French")),
-                      ],
-                      onChanged: (value) {
-                        setState(() {
-                          languageNotifier.value = value!;
-                          language = value == 1
-                              ? "English"
-                              : value == 2
-                              ? "Spanish"
-                              : "French";
-                        });
-                      },
-                      value: languageNotifier.value,
-                    ),
+                    child: LanguageSelector(languageNotifier: languageNotifier,)
                   ),
                   const SizedBox(width: 10),
                   Expanded(

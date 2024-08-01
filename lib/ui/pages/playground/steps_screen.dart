@@ -63,11 +63,15 @@ class StepsScreen extends StatelessWidget{
                               context,
                               MaterialPageRoute(
                                   builder: (context) => ChatScreen(
-                                      classTopic: {
-                                        'order': steps[index].order,
-                                        'name': steps[index].name,
-                                        'summary': steps[index].summary
-                                      }
+                                      classTopic: Subtopic(
+                                        name: steps[index].name,
+                                        description: steps[index].description,
+                                        objectives: steps[index].objectives,
+                                        summary: steps[index].summary,
+                                        completed: steps[index].completed,
+                                        order: steps[index].order,
+                                        topicId: steps[index].topicId,
+                                      )
                                   )
                               )
                           );

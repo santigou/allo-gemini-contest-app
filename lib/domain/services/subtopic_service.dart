@@ -21,7 +21,6 @@ class SubtopicService{
             description: vm.description,
             objectives: vm.objectives,
             summary: vm.summary,
-            conceptCount: 0,
             completed: false,
             order: vm.order,
             topicId: topicId

@@ -37,7 +37,7 @@ class _LanguageSelectorState extends State<LanguageSelector> {
         languages = fetchedLanguages;
         print(languages);
         if (languages.isNotEmpty) {
-          selectedLanguage = prefs.getString("languageName")??"None";
+          selectedLanguage = prefs.getString("languageName") ?? "None";
         }
       });
     } catch (e) {
@@ -58,36 +58,22 @@ class _LanguageSelectorState extends State<LanguageSelector> {
 
   @override
   Widget build(BuildContext context) {
-    return SingleChildScrollView(
-      scrollDirection: Axis.horizontal,
-      child: Row(
-        children: languages.map((language) {
-          return GestureDetector(
-            onTap: () => _onLanguageSelect(language),
-            child: Container(
-              width: 100.0,
-              padding: EdgeInsets.all(8.0),
-              margin: EdgeInsets.symmetric(horizontal: 4.0),
-              decoration: BoxDecoration(
-                border: Border.all(
-                  color: selectedLanguage == language.name ? Colors.blue : Colors.transparent,
-                  width: 2.0,
-                ),
-                borderRadius: BorderRadius.circular(8.0),
-              ),
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  Image.asset(
-                    language.image,
-                    width: 40,
-                    height: 40,
-                  ),
-                  SizedBox(height: 4.0),
-                  Text(language.name),
-                ],
-              ),
-            ),
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 16.0), // Añadir padding horizontal
+      child: DropdownButton<String>(
+        isExpanded: true,
+        value: selectedLanguage.isNotEmpty ? selectedLanguage : null,
+        hint: Text('Select Language'),
+        onChanged: (String? newLanguage) {
+          if (newLanguage != null) {
+            final selected = languages.firstWhere((language) => language.name == newLanguage);
+            _onLanguageSelect(selected);
+          }
+        },
+        items: languages.map<DropdownMenuItem<String>>((Language language) {
+          return DropdownMenuItem<String>(
+            value: language.name,
+            child: Text(language.name),
           );
         }).toList(),
       ),

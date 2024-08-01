@@ -78,7 +78,9 @@ class ApiService {
     ''';
   }
 
-  String getChatPrompt(String language, String classTopicObjective, List<Message> messageHistory) {
+  String getChatPrompt(String language, String classTopicObjective, List<Message> messageHistory, int level) {
+    //TODO: Add the local userLanguage
+    String userLanguage = "English";
     final List<Map<String, String>> messages = messageHistory.map((message) {
       return {
         'role': message.isUser ? 'user' : 'system',
@@ -89,9 +91,28 @@ class ApiService {
     print(json.encode(messages));
     // Creamos el prompt
     final String prompt = '''
-    You are a $language teacher. Your objective is to achieve the following goal: $classTopicObjective.
+    You are a $language teacher. Your objective is to achieve the following goals:\n$classTopicObjective.
     You will have conversations with the user, who is your student, to ensure their learning.
-    Always respond in JSON format and in the language that you teach.
+    your response will be as the following JSON format:
+    {
+      message: (Give a message or answer, the message depends on the level ($level) 
+          1 is Basic this means that most of the message must be on $userLanguage and 
+          explaining concepts in this language you must provide examples (max. 3) in the learning languages for the user to answer,
+          2 is intermediate the conversations must be fully on the learning language also provide examples for the user to answer,
+          3 is advance the conversation must be fully on the learning language but do not provide examples),
+      concepts:(give a list of new concepts a concept can be new vocabulary, "how to says" ex: My favorite food is ..., grammar topics such us simple past)
+      [
+        {
+          name: (Give the name of the concept, for example: simple past, "My favorite music band is ...", "fireworks",...),
+          explanation: (Give the explanation for the respective name, example: simple pas is a grammar time used to explain past,
+               this sentence can be use to express something that you like the most,
+               this word means "fuegos artificiales" in spanish),
+          examples: (give some examples for the respective concept)         
+        }
+        ...
+      ]
+      success: (boolean to express if the subtopic goals were successfully completed)
+    }
     Additionally, include in the JSON response whether the student has achieved the objective from your perspective with the variable 'success' as 'true' or 'false'.
     here is an example of how you should respond if the user hasn't completed the goal from your perspective yet {'success':'false', 'message':'{your response}'}.
     ONLY RETURN THE JSON, DON'T ADD ANY OTHER THING (for example not return json{...} or like that).

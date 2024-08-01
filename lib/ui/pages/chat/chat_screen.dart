@@ -1,13 +1,14 @@
 import 'dart:convert';
 
 import 'package:flutter/material.dart';
+import 'package:gemini_proyect/domain/entities/subtopic.dart';
 import 'package:gemini_proyect/domain/services/api_service.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import '../../../domain/services/message_service.dart';
 
 class ChatScreen extends StatefulWidget {
-  final Map<String, dynamic> classTopic;
+  final Subtopic classTopic;
   const ChatScreen({super.key, required this.classTopic});
 
   @override
@@ -39,7 +40,7 @@ class _ChatScreenState extends State<ChatScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text(widget.classTopic['name']),
+        title: Text(widget.classTopic.name),
         centerTitle: true,
       ),
       body: Stack(
@@ -103,7 +104,7 @@ class _ChatScreenState extends State<ChatScreen> {
                     child: TextField(
                       controller: _controller,
                       decoration: InputDecoration(
-                        hintText: 'Escribe un mensaje...',
+                        hintText: 'Write a message...',
                         hintStyle: const TextStyle(
                             color: Colors.black54),
                         filled: true,
@@ -147,11 +148,12 @@ class _ChatScreenState extends State<ChatScreen> {
 
     //TODO: Enviar el lenguaje correctamente
     final SharedPreferences prefs = await _prefs;
-    print("Lenguaje");
-    print(prefs.getString("languageName"));
+    String language = prefs.getString("languageName")??"English";
 
-    final classTopicObjective = widget.classTopic['summary'];
-    final apiPrompt = apiService.getChatPrompt("English", classTopicObjective, _messages);
+    //TODO: Add the level thinking on sharedPreferences
+    final classTopicObjective = widget.classTopic.objectives;
+    //TODO: Get the level of the topic
+    final apiPrompt = apiService.getChatPrompt(language, classTopicObjective, _messages, 1);
     final response = await apiService.geminiApiCall(apiPrompt);
     print(response);
     final Map<String, dynamic> decodedData = json.decode(response);
