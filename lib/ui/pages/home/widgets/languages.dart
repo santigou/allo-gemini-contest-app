@@ -18,7 +18,7 @@ class LanguageSelector extends StatefulWidget {
 }
 
 class _LanguageSelectorState extends State<LanguageSelector> {
-  String selectedLanguage = '';
+  String? selectedLanguage;
   List<Language> languages = [];
   final LanguageService _languageService = LanguageService();
   final Future<SharedPreferences> _prefs = SharedPreferences.getInstance();
@@ -37,7 +37,12 @@ class _LanguageSelectorState extends State<LanguageSelector> {
         languages = fetchedLanguages;
         print(languages);
         if (languages.isNotEmpty) {
-          selectedLanguage = prefs.getString("languageName") ?? "None";
+          final storedLanguage = prefs.getString("languageName");
+          if (storedLanguage != null && languages.any((lang) => lang.name == storedLanguage)) {
+            selectedLanguage = storedLanguage;
+          } else {
+            selectedLanguage = languages.first.name;
+          }
         }
       });
     } catch (e) {
@@ -51,7 +56,7 @@ class _LanguageSelectorState extends State<LanguageSelector> {
     prefs.setInt("languageId", language.id); // TODO: CHANGE THIS FOR CONSTANTS
     prefs.setString("languageName", language.name);
     setState(() {
-      selectedLanguage = prefs.getString("languageName")!;
+      selectedLanguage = language.name;
       widget.languageNotifier.value = language.id;
     });
   }
@@ -62,7 +67,7 @@ class _LanguageSelectorState extends State<LanguageSelector> {
       padding: const EdgeInsets.symmetric(horizontal: 16.0), // Añadir padding horizontal
       child: DropdownButton<String>(
         isExpanded: true,
-        value: selectedLanguage.isNotEmpty ? selectedLanguage : null,
+        value: selectedLanguage,
         hint: Text('Select Language'),
         onChanged: (String? newLanguage) {
           if (newLanguage != null) {
