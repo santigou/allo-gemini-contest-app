@@ -1,10 +1,9 @@
 import 'dart:convert';
-
 import 'package:flutter/material.dart';
 import 'package:gemini_proyect/domain/entities/subtopic.dart';
 import 'package:gemini_proyect/domain/services/api_service.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-
+import 'package:flutter_tts/flutter_tts.dart';
 import '../../../domain/services/message_service.dart';
 
 class ChatScreen extends StatefulWidget {
@@ -19,6 +18,7 @@ class _ChatScreenState extends State<ChatScreen> {
   final Future<SharedPreferences> _prefs = SharedPreferences.getInstance();
   final List<Message> _messages = [];
   final TextEditingController _controller = TextEditingController();
+  final FlutterTts _flutterTts = FlutterTts();
 
   void _sendMessage() {
     if (_controller.text.isNotEmpty) {
@@ -31,7 +31,8 @@ class _ChatScreenState extends State<ChatScreen> {
     }
   }
 
-  @override void initState() {
+  @override
+  void initState() {
     super.initState();
     _callApi();
   }
@@ -45,13 +46,10 @@ class _ChatScreenState extends State<ChatScreen> {
       ),
       body: Stack(
         children: [
-          // Background image
+          // Optional: Subtle background color or image
           Container(
             decoration: const BoxDecoration(
-              image: DecorationImage(
-                image: AssetImage('assets/professor.jpg'),
-                fit: BoxFit.cover,
-              ),
+              color: Colors.white, // or use a subtle background image
             ),
           ),
 
@@ -60,26 +58,27 @@ class _ChatScreenState extends State<ChatScreen> {
             children: [
               Expanded(
                 child: ListView.builder(
-                  padding: const EdgeInsets.only(
-                      bottom: 100
-                  ),
+                  padding: const EdgeInsets.only(bottom: 100),
                   itemCount: _messages.length,
                   itemBuilder: (context, index) {
                     final message = _messages[index];
                     return Align(
-                      alignment: message.isUser ? Alignment.bottomRight:Alignment.bottomLeft,
+                      alignment: message.isUser
+                          ? Alignment.bottomRight
+                          : Alignment.bottomLeft,
                       child: Container(
                         margin: const EdgeInsets.symmetric(
                             vertical: 5, horizontal: 10),
                         padding: const EdgeInsets.all(15),
                         decoration: BoxDecoration(
-                          color: message.isUser ? Colors.blueAccent : Colors.deepPurple,
+                          color: message.isUser
+                              ? Colors.blueAccent
+                              : Colors.deepPurple,
                           borderRadius: BorderRadius.circular(15),
                         ),
                         child: Text(
                           message.text,
-                          style: const TextStyle(
-                              color: Colors.white),
+                          style: const TextStyle(color: Colors.white),
                         ),
                       ),
                     );
@@ -95,8 +94,7 @@ class _ChatScreenState extends State<ChatScreen> {
             left: 0,
             right: 0,
             child: Container(
-              color: Colors
-                  .white,
+              color: Colors.white,
               padding: const EdgeInsets.all(15.0),
               child: Row(
                 children: [
@@ -105,19 +103,17 @@ class _ChatScreenState extends State<ChatScreen> {
                       controller: _controller,
                       decoration: InputDecoration(
                         hintText: 'Write a message...',
-                        hintStyle: const TextStyle(
-                            color: Colors.black54),
+                        hintStyle: const TextStyle(color: Colors.black54),
                         filled: true,
-                        fillColor: Colors
-                            .white,
+                        fillColor: Colors.grey[200],
                         border: OutlineInputBorder(
                           borderRadius: BorderRadius.circular(15),
-                          borderSide: const BorderSide(
-                              color: Colors.deepPurple, width: 4.0),
+                          borderSide: BorderSide.none,
                         ),
+                        contentPadding: const EdgeInsets.symmetric(
+                            horizontal: 20, vertical: 10),
                       ),
-                      style: const TextStyle(
-                          color: Colors.black),
+                      style: const TextStyle(color: Colors.black),
                     ),
                   ),
                   IconButton(
@@ -148,7 +144,7 @@ class _ChatScreenState extends State<ChatScreen> {
 
     //TODO: Enviar el lenguaje correctamente
     final SharedPreferences prefs = await _prefs;
-    String language = prefs.getString("languageName")??"English";
+    String language = prefs.getString("languageName") ?? "English";
 
     //TODO: Add the level thinking on sharedPreferences
     final classTopicObjective = widget.classTopic.objectives;
@@ -162,10 +158,10 @@ class _ChatScreenState extends State<ChatScreen> {
     setState(() {
       _messages.add(Message(text: apiMessage, isUser: false));
     });
+    await _flutterTts.speak(apiMessage);
     if (success == 'true') {
       //TODO: desbloquear siguiente nivel y culminar el actual
       print('El usuario finalizo con exito el nivel');
     }
-
   }
 }
