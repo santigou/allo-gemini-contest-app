@@ -81,18 +81,31 @@ class _TopicsListState extends State<TopicsList> {
         }
 
         final topics = snapshot.data!;
-        return Expanded(
-          child: ListView.builder(
-            itemCount: topics.length,
-            itemBuilder: (context, index) {
-              final topic = topics[index];
-              return ListTile(
+        return ListView.builder(
+          itemCount: topics.length,
+          itemBuilder: (context, index) {
+            final topic = topics[index];
+            return Container(
+              margin: const EdgeInsets.symmetric(vertical: 8.0, horizontal: 8.0),
+              decoration: BoxDecoration(
+                color: Colors.white,
+                borderRadius: BorderRadius.circular(12.0),
+                boxShadow: const [
+                  BoxShadow(
+                    color: Colors.black26,
+                    blurRadius: 6.0,
+                    offset: Offset(0, 2),
+                  ),
+                ],
+              ),
+              child: ListTile(
+                contentPadding: const EdgeInsets.all(16.0),
                 title: Text(topic.name),
                 subtitle: Text(topic.description),
                 onTap: () => _navigateToSteps(topic),
-              );
-            },
-          ),
+              ),
+            );
+          },
         );
       },
     );

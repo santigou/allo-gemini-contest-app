@@ -167,10 +167,19 @@ class _ChatScreenState extends State<ChatScreen> {
     setState(() {
       _messages.add(Message(text: apiMessage, isUser: false));
     });
-    await _flutterTts.speak(apiMessage);
+    await speak(apiMessage);
     if (success == 'true') {
       //TODO: desbloquear siguiente nivel y culminar el actual
       print('El usuario finalizo con exito el nivel');
     }
+  }
+
+  Future<void> speak(String text) async{
+    await _flutterTts.setVolume(1);
+    await _flutterTts.setSpeechRate(0.5);
+    await _flutterTts.setPitch(1.0);
+    await _flutterTts.setLanguage('en-US');
+    await _flutterTts.setVoice({"name": "en-in-x-cxx#male_1-local", "locale": "en-US"});
+    await _flutterTts.speak(text);
   }
 }
