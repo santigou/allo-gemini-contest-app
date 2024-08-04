@@ -1,14 +1,17 @@
 import 'dart:convert';
 import 'package:flutter/material.dart';
+import 'package:gemini_proyect/domain/entities/chat_message.dart';
 import 'package:gemini_proyect/domain/entities/subtopic.dart';
 import 'package:gemini_proyect/domain/services/api_service.dart';
+import 'package:gemini_proyect/domain/services/chat_message_service.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:flutter_tts/flutter_tts.dart';
 import '../../../domain/services/message_service.dart';
 
 class ChatScreen extends StatefulWidget {
   final Subtopic classTopic;
-  const ChatScreen({super.key, required this.classTopic});
+  final IChatMessageService chatMessageService;
+  const ChatScreen({super.key, required this.classTopic, required this.chatMessageService,});
 
   @override
   State<ChatScreen> createState() => _ChatScreenState();
@@ -26,6 +29,10 @@ class _ChatScreenState extends State<ChatScreen> {
         _messages.add(Message(text: _controller.text, isUser: true));
         _controller.clear();
       });
+      ChatMessage chatMessage = ChatMessage(message: _controller.text,
+          role: "user",
+          subtopicId: widget.classTopic.id!);
+      widget.chatMessageService.createChatMessage(chatMessage);
       _callApi();
       _controller.clear();
     }
@@ -126,7 +133,8 @@ class _ChatScreenState extends State<ChatScreen> {
                     iconSize: 30,
                     color: Colors.deepPurple,
                     onPressed: () {
-                      // Implementación del botón de micrófono
+                      // Implementació
+                      // n del botón de micrófono
                     },
                   ),
                 ],
@@ -145,11 +153,12 @@ class _ChatScreenState extends State<ChatScreen> {
     //TODO: Enviar el lenguaje correctamente
     final SharedPreferences prefs = await _prefs;
     String language = prefs.getString("languageName") ?? "English";
+    int? level = prefs.getInt("topicLevel");
 
     //TODO: Add the level thinking on sharedPreferences
     final classTopicObjective = widget.classTopic.objectives;
     //TODO: Get the level of the topic
-    final apiPrompt = apiService.getChatPrompt(language, classTopicObjective, _messages, 1);
+    final apiPrompt = apiService.getChatPrompt(language, classTopicObjective, _messages, level??1);
     final response = await apiService.geminiApiCall(apiPrompt);
     print(response);
     final Map<String, dynamic> decodedData = json.decode(response);

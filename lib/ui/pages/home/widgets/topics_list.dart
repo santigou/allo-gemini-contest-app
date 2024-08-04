@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:gemini_proyect/domain/services/chat_message_service.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 import '../../../../domain/entities/subtopic.dart';
 import '../../../../domain/entities/topic.dart';
@@ -9,6 +11,7 @@ import '../../playground/steps_screen.dart';
 class TopicsList extends StatefulWidget {
   final TopicService topicService;
   final SubtopicService subtopicService;
+  final IChatMessageService chatMessageService;
   final int languageId;
 
   const TopicsList({
@@ -16,6 +19,7 @@ class TopicsList extends StatefulWidget {
     required this.topicService,
     required this.subtopicService,
     required this.languageId,
+    required this.chatMessageService,
   }) : super(key: key);
 
   @override
@@ -24,6 +28,7 @@ class TopicsList extends StatefulWidget {
 
 class _TopicsListState extends State<TopicsList> {
   late Future<List<Topic>> _futureTopics;
+  final Future<SharedPreferences> _prefs = SharedPreferences.getInstance();
 
   @override
   void initState() {
@@ -47,12 +52,16 @@ class _TopicsListState extends State<TopicsList> {
 
   Future<void> _navigateToSteps(Topic topic) async {
     List<Subtopic> subtopics = await widget.subtopicService.getSubtopicsByTopicId(topic.id!);
+    final SharedPreferences prefs = await _prefs;
+    prefs.setInt("topicLevel", topic.level);
+
     Navigator.push(
       context,
       MaterialPageRoute(
         builder: (context) => StepsScreen(
           steps: subtopics,
           classTopicName: topic.name,
+          chatMessageService: widget.chatMessageService
         ),
       ),
     );

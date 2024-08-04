@@ -1,12 +1,14 @@
 import 'package:flutter/material.dart';
 import 'package:gemini_proyect/domain/entities/subtopic.dart';
+import 'package:gemini_proyect/domain/services/chat_message_service.dart';
 
 import '../chat/chat_screen.dart';
 
 class StepsScreen extends StatelessWidget{
   final List<Subtopic> steps;
   final String classTopicName;
-  const StepsScreen({super.key, required this.steps, required this.classTopicName});
+  final IChatMessageService chatMessageService;
+  const StepsScreen({super.key, required this.steps, required this.classTopicName, required this.chatMessageService});
   //TODO organizar el camino
   @override
   Widget build(BuildContext context) {
@@ -71,7 +73,7 @@ class StepsScreen extends StatelessWidget{
                                         completed: steps[index].completed,
                                         order: steps[index].order,
                                         topicId: steps[index].topicId,
-                                      )
+                                      ), chatMessageService: chatMessageService,
                                   )
                               )
                           );

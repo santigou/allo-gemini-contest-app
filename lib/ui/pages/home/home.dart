@@ -2,6 +2,7 @@ import 'dart:convert';
 import 'dart:math';
 
 import 'package:flutter/material.dart';
+import 'package:gemini_proyect/domain/services/chat_message_service.dart';
 import 'package:gemini_proyect/domain/utils/level.dart';
 import 'package:gemini_proyect/ui/pages/home/widgets/languages.dart';
 import 'package:gemini_proyect/ui/pages/home/widgets/topics_list.dart';
@@ -22,6 +23,7 @@ class Home extends StatefulWidget {
   final TopicService topicService;
   final SubtopicService subtopicService;
   final DatabaseService databaseService;
+  final IChatMessageService chatMessageService;
 
   const Home({
     super.key,
@@ -29,6 +31,7 @@ class Home extends StatefulWidget {
     required this.topicService,
     required this.databaseService,
     required this.subtopicService,
+    required this.chatMessageService,
   });
 
   @override
@@ -141,6 +144,7 @@ class _HomeState extends State<Home> {
                       topicService: widget.topicService,
                       subtopicService: widget.subtopicService,
                       languageId: languageId,
+                      chatMessageService: widget.chatMessageService,
                     );
                   },
                 ),
@@ -182,10 +186,12 @@ class _HomeState extends State<Home> {
 
   Future<void> _callApi() async {
     final SharedPreferences prefs = await _prefs;
+    prefs.setInt("topicLevel", _level);
     final userPrompt = _controller.text.isEmpty ? null : _controller.text;
     List<Topic> existingTopics = await widget.topicService.getAllTopics(languageId: prefs.getInt("languageId") ?? 1);
     List<String> topicNames = existingTopics.map((topic) => topic.name).toList();
     String topicString = "";
+
     if(topicNames.length > 0){
       topicString = topicNames.reduce((topics, topic) => "$topics,$topic");
     }
@@ -222,6 +228,7 @@ class _HomeState extends State<Home> {
         builder: (context) => StepsScreen(
           steps: responseModel.result,
           classTopicName: decodedData['name'],
+          chatMessageService: widget.chatMessageService,
         ),
       ),
     );
