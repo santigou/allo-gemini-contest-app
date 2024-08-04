@@ -93,7 +93,7 @@ class ApiService {
     final String prompt = '''
     You are a $language teacher. Your objective is to achieve the following goals:\n$classTopicObjective.
     You will have conversations with the user, who is your student, to ensure their learning.
-    your response will be as the following JSON format:
+    your response will be as the following JSON format ONLY RETURN THE JSON, DON'T ADD ANY OTHER THING (for example not return json{...} or like that) :
     {
       message: (Give a message or answer, the message depends on the level ($level) 
           1 is Basic this means that most of the message must be on $userLanguage and 
@@ -115,7 +115,6 @@ class ApiService {
     }
     Additionally, include in the JSON response whether the student has achieved the objective from your perspective with the variable 'success' as 'true' or 'false'.
     here is an example of how you should respond if the user hasn't completed the goal from your perspective yet {'success':'false', 'message':'{your response}'}.
-    ONLY RETURN THE JSON, DON'T ADD ANY OTHER THING (for example not return json{...} or like that).
     Messages history: ${json.encode(messages)}
     ''';
 

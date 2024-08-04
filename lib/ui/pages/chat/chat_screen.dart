@@ -5,6 +5,7 @@ import 'package:gemini_proyect/domain/entities/subtopic.dart';
 import 'package:gemini_proyect/domain/services/api_service.dart';
 import 'package:gemini_proyect/domain/services/chat_message_service.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:speech_to_text/speech_to_text.dart' as stt;
 import 'package:flutter_tts/flutter_tts.dart';
 import '../../../domain/services/message_service.dart';
 
@@ -22,6 +23,9 @@ class _ChatScreenState extends State<ChatScreen> {
   final List<Message> _messages = [];
   final TextEditingController _controller = TextEditingController();
   final FlutterTts _flutterTts = FlutterTts();
+  late stt.SpeechToText _speech;
+  bool _isListening = false;
+  String _text = "Press the microphone to start speaking";
 
   void _sendMessage() {
     if (_controller.text.isNotEmpty) {
@@ -41,6 +45,7 @@ class _ChatScreenState extends State<ChatScreen> {
   @override
   void initState() {
     super.initState();
+    _speech = stt.SpeechToText();
     _callApi();
   }
 
@@ -132,10 +137,7 @@ class _ChatScreenState extends State<ChatScreen> {
                     icon: const Icon(Icons.mic),
                     iconSize: 30,
                     color: Colors.deepPurple,
-                    onPressed: () {
-                      // Implementació
-                      // n del botón de micrófono
-                    },
+                    onPressed: _toggleListening,
                   ),
                 ],
               ),
@@ -179,7 +181,31 @@ class _ChatScreenState extends State<ChatScreen> {
     await _flutterTts.setSpeechRate(0.5);
     await _flutterTts.setPitch(1.0);
     await _flutterTts.setLanguage('en-US');
-    await _flutterTts.setVoice({"name": "en-in-x-cxx#male_1-local", "locale": "en-US"});
+    //await _flutterTts.setVoice({"name": "en-in-x-cxx#male_1-local", "locale": "en-US"});
     await _flutterTts.speak(text);
+  }
+
+  void _toggleListening() async {
+    if (_isListening) {
+      await _speech.stop();
+      setState(() {
+        _isListening = false;
+      });
+    } else {
+      bool available = await _speech.initialize();
+      if (available) {
+        setState(() {
+          _isListening = true;
+        });
+        _speech.listen(
+          onResult: (result) {
+            print(result);
+            setState(() {
+              _text = result.recognizedWords;
+            });
+          },
+        );
+      }
+    }
   }
 }
