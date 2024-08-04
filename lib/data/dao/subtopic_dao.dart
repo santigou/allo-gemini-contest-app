@@ -28,7 +28,7 @@ class SubtopicDao {
   Future<int> insertSubtopic(Subtopic subtopic) async {
     final db = await DatabaseService.instance.database;
     return await db.rawInsert(
-      'INSERT INTO subtopics( name, description, objectives, summary, completed, topicOrder, topicId) VALUES(?, ?, ?, ?, ?, ?, ?)',
+      'INSERT INTO subtopics( name, description, objectives, summary, completed, topicOrder, isUnlocked, topicId) VALUES(?, ?, ?, ?, ?, ?, ?, ?)',
       [
         subtopic.name,
         subtopic.description,
@@ -36,6 +36,7 @@ class SubtopicDao {
         subtopic.summary,
         subtopic.completed ? 1 : 0,
         subtopic.order,
+        subtopic.isUnlocked,
         subtopic.topicId,
       ],
     );
@@ -44,7 +45,7 @@ class SubtopicDao {
   Future<void> updateSubtopic(Subtopic subtopic) async {
     final db = await DatabaseService.instance.database;
     await db.rawUpdate(
-      'UPDATE subtopics SET name = ?, description =?, objectives = ?, summary = ?, conceptCount = ?, completed = ?, topicOrder = ?, topicId = ? WHERE id = ?',
+      'UPDATE subtopics SET name = ?, description =?, objectives = ?, summary = ?, conceptCount = ?, completed = ?, topicOrder = ?,isUnlocked = ?, topicId = ? WHERE id = ?',
       [
         subtopic.name,
         subtopic.description,
@@ -52,7 +53,19 @@ class SubtopicDao {
         subtopic.summary,
         subtopic.completed ? 1 : 0,
         subtopic.order,
+        subtopic.isUnlocked,
         subtopic.id
+      ],
+    );
+  }
+
+  Future<void> unlockSubtopicByOrder(int subtopicOrder, int topicId) async{
+    final db = await DatabaseService.instance.database;
+    await db.rawUpdate(
+      'UPDATE subtopics SET isUnlocked = 1 WHERE  topicOrder = ? AND topicId = ?',
+      [
+        subtopicOrder,
+        topicId
       ],
     );
   }

@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:gemini_proyect/domain/entities/subtopic.dart';
 import 'package:gemini_proyect/domain/services/chat_message_service.dart';
+import 'package:gemini_proyect/domain/services/concept_service.dart';
+import 'package:gemini_proyect/domain/services/subtopic_service.dart';
 
 import '../chat/chat_screen.dart';
 
@@ -8,7 +10,9 @@ class StepsScreen extends StatelessWidget{
   final List<Subtopic> steps;
   final String classTopicName;
   final IChatMessageService chatMessageService;
-  const StepsScreen({super.key, required this.steps, required this.classTopicName, required this.chatMessageService});
+  final ConceptService conceptService;
+  final SubtopicService subtopicService;
+  const StepsScreen({super.key, required this.steps, required this.classTopicName, required this.chatMessageService, required this.conceptService, required this.subtopicService});
   //TODO organizar el camino
   @override
   Widget build(BuildContext context) {
@@ -60,26 +64,45 @@ class StepsScreen extends StatelessWidget{
                     Padding(
                       padding: const EdgeInsets.all(16.0),
                       child: ElevatedButton(
-                        onPressed: () {
+                        style: ButtonStyle(
+                          backgroundColor: WidgetStateProperty.resolveWith<Color>(
+                                (Set<WidgetState> states) {
+                              if (steps[index].isUnlocked) {
+                                return Colors.deepPurple; // Color cuando el subtema está desbloqueado
+                              } else {
+                                return Colors.grey[300]!; // Color cuando el subtema está bloqueado
+                              }
+                            },
+                          ),
+                        ),
+                        onPressed: steps[index].isUnlocked
+                            ? () {
                           Navigator.push(
-                              context,
-                              MaterialPageRoute(
-                                  builder: (context) => ChatScreen(
-                                      classTopic: Subtopic(
-                                        name: steps[index].name,
-                                        description: steps[index].description,
-                                        objectives: steps[index].objectives,
-                                        summary: steps[index].summary,
-                                        completed: steps[index].completed,
-                                        order: steps[index].order,
-                                        topicId: steps[index].topicId,
-                                      ), chatMessageService: chatMessageService,
-                                  )
-                              )
+                            context,
+                            MaterialPageRoute(
+                              builder: (context) => ChatScreen(
+                                classTopic: Subtopic(
+                                  id: steps[index].id,
+                                  name: steps[index].name,
+                                  description: steps[index].description,
+                                  objectives: steps[index].objectives,
+                                  summary: steps[index].summary,
+                                  completed: steps[index].completed,
+                                  order: steps[index].order,
+                                  isUnlocked: steps[index].isUnlocked,
+                                  topicId: steps[index].topicId,
+                                ),
+                                chatMessageService: chatMessageService,
+                                conceptService: conceptService,
+                                subtopicService: subtopicService,
+                              ),
+                            ),
                           );
-                        },
-                        child: const Text('Iniciar'),
-                      ),
+                        }
+                            : null, // Deshabilita el botón si el subtema está bloqueado
+                        child: Text('Go to Chat', style: TextStyle(color: Colors.grey[50]), ),
+                      )
+
                     ),
                   ],
                 ),

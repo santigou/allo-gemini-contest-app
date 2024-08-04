@@ -107,7 +107,7 @@ class ApiService {
           explanation: (Give the explanation for the respective name, example: simple pas is a grammar time used to explain past,
                this sentence can be use to express something that you like the most,
                this word means "fuegos artificiales" in spanish),
-          examples: (give some examples for the respective concept)         
+          examples: (give a list of  examples for the respective concept in a string divided by -)         
         }
         ...
       ]

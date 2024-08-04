@@ -23,6 +23,7 @@ class SubtopicService{
             summary: vm.summary,
             completed: false,
             order: vm.order,
+            isUnlocked: vm.order==1,
             topicId: topicId
         );
 
@@ -42,13 +43,20 @@ class SubtopicService{
 
   Future<List<Subtopic>> getSubtopicsByTopicId(int topicId) async {
     try {
-      print(topicId);
       List<Subtopic> subtopics = await _subtopicDao.getAllSubtopics(topicId: topicId);
 
       return subtopics;
     } catch (e) {
       print("Error al obtener los subtemas: $e");
       return [];
+    }
+  }
+
+  Future<void> unlockTopicByOrder(int subtopicOrder, int topicId) async {
+    try{
+      await _subtopicDao.unlockSubtopicByOrder(subtopicOrder, topicId);
+    } catch (e) {
+      print("Error al obtener los subtemas: $e");
     }
   }
 }

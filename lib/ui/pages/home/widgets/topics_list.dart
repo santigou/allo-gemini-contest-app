@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:gemini_proyect/domain/services/chat_message_service.dart';
+import 'package:gemini_proyect/domain/services/concept_service.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import '../../../../domain/entities/subtopic.dart';
@@ -12,6 +13,7 @@ class TopicsList extends StatefulWidget {
   final TopicService topicService;
   final SubtopicService subtopicService;
   final IChatMessageService chatMessageService;
+  final ConceptService conceptService;
   final int languageId;
 
   const TopicsList({
@@ -20,6 +22,7 @@ class TopicsList extends StatefulWidget {
     required this.subtopicService,
     required this.languageId,
     required this.chatMessageService,
+    required this.conceptService,
   }) : super(key: key);
 
   @override
@@ -61,7 +64,9 @@ class _TopicsListState extends State<TopicsList> {
         builder: (context) => StepsScreen(
           steps: subtopics,
           classTopicName: topic.name,
-          chatMessageService: widget.chatMessageService
+          chatMessageService: widget.chatMessageService,
+          conceptService: widget.conceptService,
+          subtopicService: widget.subtopicService,
         ),
       ),
     );
@@ -86,7 +91,7 @@ class _TopicsListState extends State<TopicsList> {
           itemBuilder: (context, index) {
             final topic = topics[index];
             return Container(
-              margin: const EdgeInsets.symmetric(vertical: 8.0, horizontal: 8.0),
+              margin: const EdgeInsets.symmetric(vertical: 2.0, horizontal: 4.0),
               decoration: BoxDecoration(
                 color: Colors.white,
                 borderRadius: BorderRadius.circular(12.0),

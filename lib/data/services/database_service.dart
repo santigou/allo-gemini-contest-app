@@ -62,6 +62,7 @@ class DatabaseService {
         summary TEXT,
         completed INTEGER,
         topicOrder INTEGER,
+        isUnlocked INTEGER,
         FOREIGN KEY (topicId) REFERENCES topics (id)
       )
     ''');

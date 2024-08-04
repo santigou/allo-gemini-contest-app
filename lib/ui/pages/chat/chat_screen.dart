@@ -1,9 +1,13 @@
 import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:gemini_proyect/domain/entities/chat_message.dart';
+import 'package:gemini_proyect/domain/entities/concept.dart';
+import 'package:gemini_proyect/domain/entities/response_model.dart';
 import 'package:gemini_proyect/domain/entities/subtopic.dart';
 import 'package:gemini_proyect/domain/services/api_service.dart';
 import 'package:gemini_proyect/domain/services/chat_message_service.dart';
+import 'package:gemini_proyect/domain/services/concept_service.dart';
+import 'package:gemini_proyect/domain/services/subtopic_service.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:speech_to_text/speech_to_text.dart' as stt;
 import 'package:flutter_tts/flutter_tts.dart';
@@ -12,7 +16,9 @@ import '../../../domain/services/message_service.dart';
 class ChatScreen extends StatefulWidget {
   final Subtopic classTopic;
   final IChatMessageService chatMessageService;
-  const ChatScreen({super.key, required this.classTopic, required this.chatMessageService,});
+  final ConceptService conceptService;
+  final SubtopicService subtopicService;
+  const ChatScreen({super.key, required this.classTopic, required this.chatMessageService, required this.conceptService, required this.subtopicService,});
 
   @override
   State<ChatScreen> createState() => _ChatScreenState();
@@ -164,8 +170,32 @@ class _ChatScreenState extends State<ChatScreen> {
     final response = await apiService.geminiApiCall(apiPrompt);
     print(response);
     final Map<String, dynamic> decodedData = json.decode(response);
+
     final apiMessage = decodedData['message'];
     final success = decodedData['success'];
+    ChatMessage chatMessage = ChatMessage(message: apiMessage, role: "system", subtopicId: widget.classTopic.id!);
+    ResponseModel messageResponse = await widget.chatMessageService.createChatMessage(chatMessage);
+
+    if(messageResponse.isError){
+      print(messageResponse.message);
+      return;
+    }
+
+    List<Concept> conceptToSave = (decodedData['concepts'] as List)
+        .map((concept) => Concept(
+          name: concept['name'] as String,
+          explanation: concept['explanation'] as String,
+          examples: concept['examples'] as String,
+          messageId: messageResponse.result))
+        .toList();
+
+    ResponseModel conceptsResponse = await widget.conceptService.createManyConcepts(conceptToSave);
+
+    if(messageResponse.isError){
+      print(messageResponse.message);
+      return;
+    }
+
     setState(() {
       _messages.add(Message(text: apiMessage, isUser: false));
     });
@@ -173,6 +203,7 @@ class _ChatScreenState extends State<ChatScreen> {
     if (success == 'true') {
       //TODO: desbloquear siguiente nivel y culminar el actual
       print('El usuario finalizo con exito el nivel');
+      widget.subtopicService.unlockTopicByOrder(widget.classTopic.order+1, widget.classTopic.topicId);
     }
   }
 

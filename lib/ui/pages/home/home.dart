@@ -3,6 +3,7 @@ import 'dart:math';
 
 import 'package:flutter/material.dart';
 import 'package:gemini_proyect/domain/services/chat_message_service.dart';
+import 'package:gemini_proyect/domain/services/concept_service.dart';
 import 'package:gemini_proyect/domain/utils/level.dart';
 import 'package:gemini_proyect/ui/pages/home/widgets/languages.dart';
 import 'package:gemini_proyect/ui/pages/home/widgets/topics_list.dart';
@@ -24,6 +25,7 @@ class Home extends StatefulWidget {
   final SubtopicService subtopicService;
   final DatabaseService databaseService;
   final IChatMessageService chatMessageService;
+  final ConceptService conceptService;
 
   const Home({
     super.key,
@@ -32,6 +34,7 @@ class Home extends StatefulWidget {
     required this.databaseService,
     required this.subtopicService,
     required this.chatMessageService,
+    required this.conceptService,
   });
 
   @override
@@ -125,6 +128,7 @@ class _HomeState extends State<Home> {
                       subtopicService: widget.subtopicService,
                       languageId: languageId,
                       chatMessageService: widget.chatMessageService,
+                      conceptService: widget.conceptService,
                     );
                   },
                 ),
@@ -198,6 +202,8 @@ class _HomeState extends State<Home> {
           steps: responseModel.result,
           classTopicName: decodedData['name'],
           chatMessageService: widget.chatMessageService,
+          conceptService: widget.conceptService,
+          subtopicService: widget.subtopicService,
         ),
       ),
     );

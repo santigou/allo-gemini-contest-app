@@ -6,6 +6,7 @@ class Subtopic {
   String summary;
   bool completed;
   int order;
+  bool isUnlocked;
   int topicId; // Clave foránea al tema
 
   Subtopic({
@@ -16,6 +17,7 @@ class Subtopic {
     required this.summary,
     required this.completed,
     required this.order,
+    required this.isUnlocked,
     required this.topicId,
   });
 
@@ -27,6 +29,7 @@ class Subtopic {
       summary: map['summary'] as String,
       completed: map['completed'] == 1, // Convert integer back to boolean
       order: map['topicOrder'] as int,
+      isUnlocked: (map['isUnlocked'] as int) == 1,
       topicId: map['topicId'] as int,
   );
 }
