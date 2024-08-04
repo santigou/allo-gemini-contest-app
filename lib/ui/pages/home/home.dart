@@ -145,17 +145,6 @@ class _HomeState extends State<Home> {
     }
   }
 
-  Future<void> _getLanguageSelected(bool value) async {
-    final SharedPreferences prefs = await _prefs;
-    try {
-      String found = prefs.getString("languageName") ?? "Select language";
-      setState(() {
-        language = found;
-      });
-    } catch (e) {
-    }
-  }
-
   void _onSelectLevel (int? selectedLevel){
     if(selectedLevel is int){
       setState(() {
@@ -212,19 +201,5 @@ class _HomeState extends State<Home> {
         ),
       ),
     );
-  }
-
-  Future<void> _callEmptyApi() async {
-    _controller.text = "";
-    await _callApi();
-  }
-
-  List<String> _parseResponse(String response) {
-    try {
-      return List<String>.from(jsonDecode(response));
-    } catch (e) {
-      print("Error al decodificar la respuesta: $e");
-      return [];
-    }
   }
 }
