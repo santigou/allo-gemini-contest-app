@@ -18,7 +18,7 @@ class ChatScreen extends StatefulWidget {
   final IChatMessageService chatMessageService;
   final ConceptService conceptService;
   final SubtopicService subtopicService;
-  const ChatScreen({super.key, required this.classTopic, required this.chatMessageService, required this.conceptService, required this.subtopicService,});
+  const ChatScreen({super.key, required this.classTopic, required this.chatMessageService, required this.conceptService, required this.subtopicService});
 
   @override
   State<ChatScreen> createState() => _ChatScreenState();
@@ -32,6 +32,8 @@ class _ChatScreenState extends State<ChatScreen> {
   late stt.SpeechToText _speech;
   bool _isListening = false;
   String _text = "Press the microphone to start speaking";
+  final ScrollController _scrollController = ScrollController();
+  final FocusNode _focusNode = FocusNode();
 
   void _sendMessage() {
     if (_controller.text.isNotEmpty) {
@@ -39,13 +41,25 @@ class _ChatScreenState extends State<ChatScreen> {
         _messages.add(Message(text: _controller.text, isUser: true));
         _controller.clear();
       });
-      ChatMessage chatMessage = ChatMessage(message: _controller.text,
+      ChatMessage chatMessage = ChatMessage(
+          message: _controller.text,
           role: "user",
           subtopicId: widget.classTopic.id!);
       widget.chatMessageService.createChatMessage(chatMessage);
       _callApi();
       _controller.clear();
+      _scrollToBottom();
     }
+  }
+
+  void _scrollToBottom() {
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      _scrollController.animateTo(
+        _scrollController.position.maxScrollExtent,
+        duration: const Duration(milliseconds: 300),
+        curve: Curves.easeOut,
+      );
+    });
   }
 
   @override
@@ -53,6 +67,17 @@ class _ChatScreenState extends State<ChatScreen> {
     super.initState();
     _speech = stt.SpeechToText();
     _callApi();
+    _focusNode.addListener(() {
+      if (_focusNode.hasFocus) {
+        _scrollToBottom();
+      }
+    });
+  }
+
+  @override
+  void dispose() {
+    _focusNode.dispose();
+    super.dispose();
   }
 
   @override
@@ -76,6 +101,7 @@ class _ChatScreenState extends State<ChatScreen> {
             children: [
               Expanded(
                 child: ListView.builder(
+                  controller: _scrollController,
                   padding: const EdgeInsets.only(bottom: 100),
                   itemCount: _messages.length,
                   itemBuilder: (context, index) {
@@ -119,6 +145,7 @@ class _ChatScreenState extends State<ChatScreen> {
                   Expanded(
                     child: TextField(
                       controller: _controller,
+                      focusNode: _focusNode,
                       decoration: InputDecoration(
                         hintText: 'Write a message...',
                         hintStyle: const TextStyle(color: Colors.black54),
@@ -156,7 +183,7 @@ class _ChatScreenState extends State<ChatScreen> {
 
   Future<void> _callApi() async {
     //TODO: Cambiar a inyection?
-    ApiService apiService = new ApiService();
+    ApiService apiService = ApiService();
 
     //TODO: Enviar el lenguaje correctamente
     final SharedPreferences prefs = await _prefs;
@@ -166,7 +193,7 @@ class _ChatScreenState extends State<ChatScreen> {
     //TODO: Add the level thinking on sharedPreferences
     final classTopicObjective = widget.classTopic.objectives;
     //TODO: Get the level of the topic
-    final apiPrompt = apiService.getChatPrompt(language, classTopicObjective, _messages, level??1);
+    final apiPrompt = apiService.getChatPrompt(language, classTopicObjective, _messages, level ?? 1);
     final response = await apiService.geminiApiCall(apiPrompt);
     print(response);
     final Map<String, dynamic> decodedData = json.decode(response);
@@ -176,38 +203,39 @@ class _ChatScreenState extends State<ChatScreen> {
     ChatMessage chatMessage = ChatMessage(message: apiMessage, role: "system", subtopicId: widget.classTopic.id!);
     ResponseModel messageResponse = await widget.chatMessageService.createChatMessage(chatMessage);
 
-    if(messageResponse.isError){
+    if (messageResponse.isError) {
       print(messageResponse.message);
       return;
     }
 
     List<Concept> conceptToSave = (decodedData['concepts'] as List)
         .map((concept) => Concept(
-          name: concept['name'] as String,
-          explanation: concept['explanation'] as String,
-          examples: concept['examples'] as String,
-          messageId: messageResponse.result))
+        name: concept['name'] as String,
+        explanation: concept['explanation'] as String,
+        examples: concept['examples'] as String,
+        messageId: messageResponse.result))
         .toList();
 
     ResponseModel conceptsResponse = await widget.conceptService.createManyConcepts(conceptToSave);
 
-    if(conceptsResponse.isError){
+    if (conceptsResponse.isError) {
       print(messageResponse.message);
       return;
     }
 
     setState(() {
       _messages.add(Message(text: apiMessage, isUser: false));
+      _scrollToBottom(); // Scroll to bottom after receiving message
     });
     await speak(apiMessage);
     if (success as bool) {
       //TODO: desbloquear siguiente nivel y culminar el actual
       print('El usuario finalizo con exito el nivel');
-      widget.subtopicService.unlockTopicByOrder(widget.classTopic.order+1, widget.classTopic.topicId);
+      widget.subtopicService.unlockTopicByOrder(widget.classTopic.order + 1, widget.classTopic.topicId);
     }
   }
 
-  Future<void> speak(String text) async{
+  Future<void> speak(String text) async {
     await _flutterTts.setVolume(1);
     await _flutterTts.setSpeechRate(0.5);
     await _flutterTts.setPitch(1.0);
