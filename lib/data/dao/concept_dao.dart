@@ -6,7 +6,7 @@ class ConceptDao {
   Future<List<Concept>> getAllConcepts({int? messageId}) async {
     final db = await DatabaseService.instance.database;
     final List<Map<String, dynamic>> maps = await db.rawQuery(
-        'SELECT * FROM concept ${(messageId == null) ? '' : "WHERE messageId = $messageId"} ORDER BY id DESC');
+        'SELECT * FROM concepts ${(messageId == null) ? '' : "WHERE messageId = $messageId"} ORDER BY id DESC');
     return List.generate(maps.length, (i) {
       return Concept.fromSqfliteDatabase(maps[i]);
     });
@@ -15,7 +15,7 @@ class ConceptDao {
   Future<Concept?> getConceptById(int id) async {
     final db = await DatabaseService.instance.database;
     final List<Map<String, dynamic>> maps = await db.rawQuery(
-      'SELECT * FROM concept WHERE id = ?',
+      'SELECT * FROM concepts WHERE id = ?',
       [id],
     );
     if (maps.isNotEmpty) {
@@ -27,7 +27,7 @@ class ConceptDao {
   Future<int> insertConcept(Concept concept) async {
     final db = await DatabaseService.instance.database;
     return await db.rawInsert(
-      'INSERT INTO concept(name, explanation, examples, messageId) VALUES(?, ?, ?, ?)',
+      'INSERT INTO concepts(name, explanation, examples, messageId) VALUES(?, ?, ?, ?)',
       [
         concept.name,
         concept.explanation,
@@ -40,7 +40,7 @@ class ConceptDao {
   Future<void> updateConcept(Concept concept) async {
     final db = await DatabaseService.instance.database;
     await db.rawUpdate(
-      'UPDATE concept SET name = ?, explanation = ?, examples = ?, messageId = ? WHERE id = ?',
+      'UPDATE concepts SET name = ?, explanation = ?, examples = ?, messageId = ? WHERE id = ?',
       [
         concept.name,
         concept.explanation,
@@ -54,7 +54,7 @@ class ConceptDao {
   Future<void> deleteConcept(int id) async {
     final db = await DatabaseService.instance.database;
     await db.rawDelete(
-      'DELETE FROM concept WHERE id = ?',
+      'DELETE FROM concepts WHERE id = ?',
       [id],
     );
   }

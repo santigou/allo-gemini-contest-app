@@ -115,6 +115,8 @@ class ApiService {
     }
     Additionally, include in the JSON response whether the student has achieved the objective from your perspective with the variable 'success' as 'true' or 'false'.
     here is an example of how you should respond if the user hasn't completed the goal from your perspective yet {'success':'false', 'message':'{your response}'}.
+    if there are at least 5 messages and the last message is from the user and it says !finish or /finish you must send a message with something like "you compleated this subtopic manually" and  return success 'true'
+    JUST RETURN THE JSON WITHOUT ANY OTHER WORD OR TEXT
     Messages history: ${json.encode(messages)}
     ''';
 

@@ -191,7 +191,7 @@ class _ChatScreenState extends State<ChatScreen> {
 
     ResponseModel conceptsResponse = await widget.conceptService.createManyConcepts(conceptToSave);
 
-    if(messageResponse.isError){
+    if(conceptsResponse.isError){
       print(messageResponse.message);
       return;
     }
@@ -200,7 +200,7 @@ class _ChatScreenState extends State<ChatScreen> {
       _messages.add(Message(text: apiMessage, isUser: false));
     });
     await speak(apiMessage);
-    if (success == 'true') {
+    if (success as bool) {
       //TODO: desbloquear siguiente nivel y culminar el actual
       print('El usuario finalizo con exito el nivel');
       widget.subtopicService.unlockTopicByOrder(widget.classTopic.order+1, widget.classTopic.topicId);

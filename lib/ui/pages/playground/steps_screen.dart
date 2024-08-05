@@ -6,19 +6,53 @@ import 'package:gemini_proyect/domain/services/subtopic_service.dart';
 
 import '../chat/chat_screen.dart';
 
-class StepsScreen extends StatelessWidget{
+class StepsScreen extends StatefulWidget {
   final List<Subtopic> steps;
   final String classTopicName;
   final IChatMessageService chatMessageService;
   final ConceptService conceptService;
   final SubtopicService subtopicService;
-  const StepsScreen({super.key, required this.steps, required this.classTopicName, required this.chatMessageService, required this.conceptService, required this.subtopicService});
-  //TODO organizar el camino
+
+  const StepsScreen({
+    super.key,
+    required this.steps,
+    required this.classTopicName,
+    required this.chatMessageService,
+    required this.conceptService,
+    required this.subtopicService,
+  });
+
+  @override
+  _StepsScreenState createState() => _StepsScreenState();
+}
+
+class _StepsScreenState extends State<StepsScreen> {
+  late List<Subtopic> steps;
+
+  @override
+  void initState() {
+    super.initState();
+    steps = widget.steps;
+  }
+
+  void updateSteps(List<Subtopic> newSteps) {
+    setState(() {
+      steps = newSteps;
+    });
+  }
+
+  Future<void> _refreshSteps() async {
+    // Aquí debes obtener los datos actualizados de tu fuente de datos, por ejemplo, una llamada a la base de datos o a un servicio.
+    // Supongamos que obtienes los datos de un servicio:
+    List<Subtopic> updatedSteps = await widget.subtopicService.getSubtopicsByTopicId(steps.first.topicId);
+    updateSteps(updatedSteps);
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text(classTopicName),
+        title: Text(widget.classTopicName),
       ),
       body: Padding(
         padding: const EdgeInsets.all(15.0),
@@ -41,10 +75,12 @@ class StepsScreen extends StatelessWidget{
                       width: MediaQuery.of(context).size.width * 1,
                       decoration: const BoxDecoration(
                         color: Colors.deepPurple,
-                        borderRadius: BorderRadius.only(topLeft: Radius.circular(7.0), topRight: Radius.circular(7.0))
+                        borderRadius: BorderRadius.only(
+                            topLeft: Radius.circular(7.0),
+                            topRight: Radius.circular(7.0)),
                       ),
                       child: Text(
-                        '${steps[index].order}. ${steps[index].name }',
+                        '${steps[index].order}. ${steps[index].name}',
                         style: const TextStyle(
                           color: Colors.white,
                           fontSize: 18,
@@ -65,7 +101,8 @@ class StepsScreen extends StatelessWidget{
                       padding: const EdgeInsets.all(16.0),
                       child: ElevatedButton(
                         style: ButtonStyle(
-                          backgroundColor: WidgetStateProperty.resolveWith<Color>(
+                          backgroundColor:
+                          WidgetStateProperty.resolveWith<Color>(
                                 (Set<WidgetState> states) {
                               if (steps[index].isUnlocked) {
                                 return Colors.deepPurple; // Color cuando el subtema está desbloqueado
@@ -76,8 +113,9 @@ class StepsScreen extends StatelessWidget{
                           ),
                         ),
                         onPressed: steps[index].isUnlocked
-                            ? () {
-                          Navigator.push(
+                            ? () async {
+                          // Navegar a ChatScreen y esperar el resultado
+                          await Navigator.push(
                             context,
                             MaterialPageRoute(
                               builder: (context) => ChatScreen(
@@ -92,17 +130,23 @@ class StepsScreen extends StatelessWidget{
                                   isUnlocked: steps[index].isUnlocked,
                                   topicId: steps[index].topicId,
                                 ),
-                                chatMessageService: chatMessageService,
-                                conceptService: conceptService,
-                                subtopicService: subtopicService,
+                                chatMessageService:
+                                widget.chatMessageService,
+                                conceptService: widget.conceptService,
+                                subtopicService: widget.subtopicService,
                               ),
                             ),
                           );
+
+                          // Actualizar los pasos al regresar de ChatScreen
+                          await _refreshSteps();
                         }
                             : null, // Deshabilita el botón si el subtema está bloqueado
-                        child: Text('Go to Chat', style: TextStyle(color: Colors.grey[50]), ),
-                      )
-
+                        child: Text(
+                          'Go to Chat',
+                          style: TextStyle(color: Colors.grey[50]),
+                        ),
+                      ),
                     ),
                   ],
                 ),
