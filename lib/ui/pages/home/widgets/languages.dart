@@ -3,14 +3,20 @@ import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import '../../../../domain/entities/language.dart';
+import '../../../../domain/entities/topic.dart';
 import '../../../../domain/services/language_service.dart';
+import '../../../../domain/services/topic_service.dart';
 
 class LanguageSelector extends StatefulWidget {
   final ValueNotifier<int> languageNotifier;
+  final ValueNotifier<List<Topic>> topicsNotifier;
+  final TopicService topicService;
 
   const LanguageSelector({
     Key? key,
     required this.languageNotifier,
+    required this.topicsNotifier,
+    required this.topicService,
   }) : super(key: key);
 
   @override
@@ -35,7 +41,6 @@ class _LanguageSelectorState extends State<LanguageSelector> {
       final fetchedLanguages = await _languageService.fetchLanguages();
       setState(() {
         languages = fetchedLanguages;
-        print(languages);
         if (languages.isNotEmpty) {
           final storedLanguage = prefs.getString("languageName");
           if (storedLanguage != null && languages.any((lang) => lang.name == storedLanguage)) {
@@ -53,18 +58,22 @@ class _LanguageSelectorState extends State<LanguageSelector> {
 
   Future<void> _onLanguageSelect(Language language) async {
     final SharedPreferences prefs = await _prefs;
-    prefs.setInt("languageId", language.id); // TODO: CHANGE THIS FOR CONSTANTS
+    prefs.setInt("languageId", language.id);
     prefs.setString("languageName", language.name);
     setState(() {
       selectedLanguage = language.name;
       widget.languageNotifier.value = language.id;
     });
+
+    // Actualizar la lista de temas al cambiar de idioma
+    List<Topic> topics = await widget.topicService.getAllTopics(languageId: language.id);
+    widget.topicsNotifier.value = topics;
   }
 
   @override
   Widget build(BuildContext context) {
     return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 16.0), // Añadir padding horizontal
+      padding: const EdgeInsets.symmetric(horizontal: 16.0),
       child: DropdownButton<String>(
         isExpanded: true,
         value: selectedLanguage,

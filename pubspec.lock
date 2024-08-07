@@ -102,30 +102,35 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "3.0.2"
+  flutter_localizations:
+    dependency: "direct dev"
+    description: flutter
+    source: sdk
+    version: "0.0.0"
   flutter_sound:
     dependency: "direct main"
     description:
       name: flutter_sound
-      sha256: d381fdcdfc0278a5abc3d556d0d4d14e04055ac8881d4bd367a3af908328a3ad
+      sha256: "5164c67e2788db9bf1a08cf588c6819b6465dd097c7c6eeacde6a135a6dba47e"
       url: "https://pub.dev"
     source: hosted
-    version: "9.8.1"
+    version: "9.9.5"
   flutter_sound_platform_interface:
     dependency: transitive
     description:
       name: flutter_sound_platform_interface
-      sha256: ca188c6e791126f51aab0172d6d6b7773a917d87037b8207068320c60fe7e697
+      sha256: "31895be7f8d0eb6f20a8353525c5a85498fabe7ed1cbf90f704db9158e22f313"
       url: "https://pub.dev"
     source: hosted
-    version: "9.8.1"
+    version: "9.9.5"
   flutter_sound_web:
     dependency: transitive
     description:
       name: flutter_sound_web
-      sha256: a4e7626abde25d3c15acc92ea12292bd19d182428671761e51cc7a66b146a9be
+      sha256: "9382f2212728819c85effc3f44eb87889d2c00009d3d7445c7b123b9d71978a8"
       url: "https://pub.dev"
     source: hosted
-    version: "9.8.1"
+    version: "9.9.5"
   flutter_test:
     dependency: "direct dev"
     description: flutter
@@ -168,6 +173,14 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "4.0.2"
+  intl:
+    dependency: "direct dev"
+    description:
+      name: intl
+      sha256: d6f56758b7d3014a48af9701c085700aac781a92a87a62b1333b46d8879661cf
+      url: "https://pub.dev"
+    source: hosted
+    version: "0.19.0"
   js:
     dependency: transitive
     description:
@@ -348,10 +361,10 @@ packages:
     dependency: transitive
     description:
       name: permission_handler_html
-      sha256: "54bf176b90f6eddd4ece307e2c06cf977fb3973719c35a93b85cc7093eb6070d"
+      sha256: "6cac773d389e045a8d4f85418d07ad58ef9e42a56e063629ce14c4c26344de24"
       url: "https://pub.dev"
     source: hosted
-    version: "0.1.1"
+    version: "0.1.2"
   permission_handler_platform_interface:
     dependency: transitive
     description:
@@ -601,10 +614,10 @@ packages:
     dependency: transitive
     description:
       name: web
-      sha256: d43c1d6b787bf0afad444700ae7f4db8827f701bc61c255ac8d328c6f4d52062
+      sha256: "97da13628db363c635202ad97068d47c5b8aa555808e7a9411963c533b449b27"
       url: "https://pub.dev"
     source: hosted
-    version: "1.0.0"
+    version: "0.5.1"
   xdg_directories:
     dependency: transitive
     description:

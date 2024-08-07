@@ -1,6 +1,9 @@
 import 'dart:convert';
 import 'package:google_generative_ai/google_generative_ai.dart';
 import 'package:http/http.dart' as http;
+import 'package:flutter_localizations/flutter_localizations.dart';
+import 'package:intl/intl.dart';
+import 'dart:convert';
 
 import 'message_service.dart';
 
@@ -80,7 +83,10 @@ class ApiService {
 
   String getChatPrompt(String language, String classTopicObjective, List<Message> messageHistory, int level) {
     //TODO: Add the local userLanguage
-    String userLanguage = "English";
+    String userLanguage = Intl.getCurrentLocale();
+
+    print(userLanguage);
+
     final List<Map<String, String>> messages = messageHistory.map((message) {
       return {
         'role': message.isUser ? 'user' : 'system',
@@ -95,11 +101,11 @@ class ApiService {
     You will have conversations with the user, who is your student, to ensure their learning.
     your response will be as the following JSON format ONLY RETURN THE JSON, DON'T ADD ANY OTHER THING (for example not return json{...} or like that) :
     {
-      message: (Give a message or answer, the message depends on the level ($level) 
+      message: (Give a message to correct the mistakes or answer to the user, the message depends on the level ($level) 
           1 is Basic this means that most of the message must be on $userLanguage and 
           explaining concepts in this language you must provide examples (max. 3) in the learning languages for the user to answer,
-          2 is intermediate the conversations must be fully on the learning language also provide examples for the user to answer,
-          3 is advance the conversation must be fully on the learning language but do not provide examples),
+          2 is intermediate the conversations must be most on the learning language also you must provide examples for the user,
+          3 is advance the conversation must be most on the learning language but do not provide examples (example: the user asks how do you say grappes? and the language is spanish you can answer "para decir 'grapes' en español you use uvas" this is a concept also),
       concepts:(give a list of new concepts a concept can be new vocabulary, "how to says" ex: My favorite food is ..., grammar topics such us simple past)
       [
         {
@@ -113,10 +119,36 @@ class ApiService {
       ]
       success: (boolean to express if the subtopic goals were successfully completed)
     }
-    Additionally, include in the JSON response whether the student has achieved the objective from your perspective with the variable 'success' as 'true' or 'false'.
-    here is an example of how you should respond if the user hasn't completed the goal from your perspective yet {'success':'false', 'message':'{your response}'}.
-    if there are at least 5 messages and the last message is from the user and it says !finish or /finish you must send a message with something like "you compleated this subtopic manually" and  return success 'true'
+    Additionally, include in the JSON response whether the student has achieved the objective from your perspective with the variable 'success' as true or false.
+    here is an example of how you should respond if the user hasn't completed the goal from your perspective yet {'success':false, 'message':'{your response}'}.
+    if there are at least 5 messages and the last message is from the user and it says !finish or /finish you must send a message with something like "you compleated this subtopic manually" and  return success true
     JUST RETURN THE JSON WITHOUT ANY OTHER WORD OR TEXT
+    IMPORTANT CORRECT IN THE NEXT MESSAGE FOR EXAMPLE:
+    -if the user is leaning spanish and says something like "yo freir papas en la tarde" 
+    you can answer "el modo correcto para decir eso es  'yo frito papas en la tarde'" and you can send the conjugations in the concepts
+    -If the user make a mistake you must aks to repeat the sentence
+    -Remark the mistake and correct it
+    
+    Responses examples: Suppose learning Language: Spanish and native language: English 
+    
+    Message examples:
+    * When the user makes a mistake you can answer for example:
+    - user message: "Yo pedir una pizza con pina"
+      answer message: "Buen trabajo, sin embargo, la forma correcta para decir 'I ask for a pineapple pizza' es 'yo pido una pizza con pina' ..."
+    - user message: "El jugar al futbol todos los dias"
+      answer message: "Bien hecho, pero la respuesta correcta para expresar 'He plays soccer everyday' es 'El juega futbol todos los dias' ..."
+    
+    Concepts examples:
+    * For conjugations (in case the learning language needs it) use the following concept schema:
+    {
+      name: 'Querer (presente)',
+      explanation: "This verb means 'to want' ..., remember Spanish uses conjugations:
+        'Yo quiero ...', 'Tu quieres...', 'El/Ella/Eso quiere...', 'Ustedes/Ellos/Ellas quieren...', 'Nosotros queremos...'"(Add each subject with its conjugation),
+      examples: "-Yo quiero comer pizza = I want to eat pizza - El quiere un carro 0 km = He wants a 0 km car -Nosotros queremos jugar futbol = We wanna play soccer"
+    }
+    
+    These are just examples to follow you can add more information in any field
+    
     Messages history: ${json.encode(messages)}
     ''';
 
