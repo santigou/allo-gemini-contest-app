@@ -10,6 +10,7 @@ import 'package:gemini_proyect/domain/services/concept_service.dart';
 import 'package:gemini_proyect/domain/services/subtopic_service.dart';
 import 'package:gemini_proyect/ui/pages/chat/widgets/chat_app_bar.dart';
 import 'package:gemini_proyect/ui/pages/chat/widgets/concepts_list_widget.dart';
+import 'package:gemini_proyect/ui/pages/chat/widgets/chat_message_widget.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:speech_to_text/speech_to_text.dart' as stt;
 import 'package:flutter_tts/flutter_tts.dart';
@@ -39,13 +40,14 @@ class _ChatScreenState extends State<ChatScreen> {
 
   void _sendMessage() {
     if (_controller.text.isNotEmpty) {
-      setState(() {
-        _messages.add(Message(text: _controller.text, isUser: true));
+      setState(() async {
         ChatMessage chatMessage = ChatMessage(
             message: _controller.text,
             role: "user",
             subtopicId: widget.classTopic.id!);
-        widget.chatMessageService.createChatMessage(chatMessage);
+        ResponseModel messageResponse = await widget.chatMessageService.createChatMessage(chatMessage);
+
+        _messages.add(Message(text: _controller.text, isUser: true, id: messageResponse.result));
         _callApi();
         _controller.clear();
         _scrollToBottom();
@@ -85,7 +87,7 @@ class _ChatScreenState extends State<ChatScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: ChatAppBar(title: widget.classTopic.name, onMoreOptionsPressed: _showConceptsPopup),
+      appBar: ChatAppBar(title: widget.classTopic.name, onConceptsPressed: _showConceptsPopup),
       body: Stack(
         children: [
           Container(
@@ -116,10 +118,7 @@ class _ChatScreenState extends State<ChatScreen> {
                               : Colors.deepPurple,
                           borderRadius: BorderRadius.circular(15),
                         ),
-                        child: Text(
-                          message.text,
-                          style: const TextStyle(color: Colors.white),
-                        ),
+                        child: ChatMessageWidget(message: message, onConceptPressed: _showConceptsPopup,),
                       ),
                     );
                   },
@@ -179,7 +178,7 @@ class _ChatScreenState extends State<ChatScreen> {
     List<ChatMessage> existingMessages = await widget.chatMessageService.getChatMessagesBySubtopicId(widget.classTopic.id!);
     if (existingMessages.isNotEmpty) {
       setState(() {
-        _messages.addAll(existingMessages.map((chatMessage) => Message(text: chatMessage.message, isUser: chatMessage.role == "user")).toList());
+        _messages.addAll(existingMessages.map((chatMessage) => Message(text: chatMessage.message, isUser: chatMessage.role == "user", id: chatMessage.id!)).toList());
         _scrollToBottom();
       });
     } else {
@@ -226,7 +225,7 @@ class _ChatScreenState extends State<ChatScreen> {
     }
 
     setState(() {
-      _messages.add(Message(text: apiMessage, isUser: false));
+      _messages.add(Message(text: apiMessage, isUser: false, id: messageResponse.result));
       _scrollToBottom();
     });
     await speak(apiMessage);

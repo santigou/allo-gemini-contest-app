@@ -2,9 +2,9 @@ import 'package:flutter/material.dart';
 
 class ChatAppBar extends StatelessWidget implements PreferredSizeWidget {
   final String title;
-  final VoidCallback onMoreOptionsPressed; // Añadido para el callback
+  final VoidCallback onConceptsPressed;
 
-  const ChatAppBar({super.key, required this.title, required this.onMoreOptionsPressed});
+  const ChatAppBar({super.key, required this.title, required this.onConceptsPressed});
 
   @override
   Widget build(BuildContext context) {
@@ -20,8 +20,8 @@ class ChatAppBar extends StatelessWidget implements PreferredSizeWidget {
       ),
       actions: [
         IconButton(
-          icon: Icon(Icons.more_vert),
-          onPressed: onMoreOptionsPressed, // Llama al callback
+          icon: Icon(Icons.menu_book),
+          onPressed: onConceptsPressed,
         ),
       ],
       elevation: 0,

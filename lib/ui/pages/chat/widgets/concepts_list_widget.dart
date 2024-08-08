@@ -4,11 +4,11 @@ import 'package:gemini_proyect/domain/entities/concept.dart';
 class ConceptsPopup extends StatelessWidget {
   final List<Concept> concepts;
 
-  const ConceptsPopup({Key? key, required this.concepts}) : super(key: key);
+  const ConceptsPopup({super.key, required this.concepts});
 
   @override
   Widget build(BuildContext context) {
-    return ListView.builder(
+    return (concepts.isNotEmpty) ? ListView.builder(
       itemCount: concepts.length,
       itemBuilder: (context, index) {
         final concept = concepts[index];
@@ -33,6 +33,6 @@ class ConceptsPopup extends StatelessWidget {
           ),
         );
       },
-    );
+    ) : Center(child: Text("No Concepts available"),);
   }
 }
