@@ -40,6 +40,17 @@ class ConceptService {
     }
   }
 
+
+  Future<List<Concept>> getConceptsBySubtopicId(int subtopicId) async {
+    try {
+      List<Concept> concepts = await _conceptDao.getConceptsBySubtopic(subtopicId: subtopicId);
+      return concepts;
+    } catch (e) {
+      print("Error getting concepts: $e");
+      return [];
+    }
+  }
+
   Future<Concept?> getConceptById(int id) async {
     try {
       Concept? concept = await _conceptDao.getConceptById(id);

@@ -53,6 +53,7 @@ class _HomeState extends State<Home> {
   ];
 
   ValueNotifier<int> languageNotifier = ValueNotifier<int>(1);
+  ValueNotifier<List<Topic>> topicsNotifier = ValueNotifier<List<Topic>>([]);
   String? language;
 
   void setRandomText() {
@@ -61,6 +62,19 @@ class _HomeState extends State<Home> {
     setState(() {
       _controller.text = randomText;
     });
+  }
+
+  @override
+  void initState() {
+    super.initState();
+    _loadTopics();
+  }
+
+  Future<void> _loadTopics() async {
+    final SharedPreferences prefs = await _prefs;
+    int languageId = prefs.getInt("languageId") ?? 1;
+    List<Topic> topics = await widget.topicService.getAllTopics(languageId: languageId);
+    topicsNotifier.value = topics;
   }
 
   @override
@@ -88,7 +102,11 @@ class _HomeState extends State<Home> {
               Row(
                 children: [
                   Expanded(
-                    child: LanguageSelector(languageNotifier: languageNotifier,)
+                    child: LanguageSelector(
+                      languageNotifier: languageNotifier,
+                      topicsNotifier: topicsNotifier,
+                      topicService: widget.topicService,
+                    ),
                   ),
                   const SizedBox(width: 10),
                   Expanded(
@@ -120,17 +138,13 @@ class _HomeState extends State<Home> {
               ),
               const SizedBox(height: 10),
               Expanded(
-                child: ValueListenableBuilder<int>(
-                  valueListenable: languageNotifier,
-                  builder: (context, languageId, child) {
-                    return TopicsList(
-                      topicService: widget.topicService,
-                      subtopicService: widget.subtopicService,
-                      languageId: languageId,
-                      chatMessageService: widget.chatMessageService,
-                      conceptService: widget.conceptService,
-                    );
-                  },
+                child: TopicsList(
+                  topicsNotifier: topicsNotifier,
+                  topicService: widget.topicService,
+                  subtopicService: widget.subtopicService,
+                  chatMessageService: widget.chatMessageService,
+                  conceptService: widget.conceptService,
+                  languageNotifier: languageNotifier,
                 ),
               ),
             ],
@@ -165,11 +179,11 @@ class _HomeState extends State<Home> {
     List<String> topicNames = existingTopics.map((topic) => topic.name).toList();
     String topicString = "";
 
-    if(topicNames.length > 0){
+    if(topicNames.isNotEmpty){
       topicString = topicNames.reduce((topics, topic) => "$topics,$topic");
     }
 
-    final apiPrompt = widget.apiService.getTopicPrompt(prefs.getString("languageName") ?? "English", userPrompt: userPrompt, existingTopics: topicString, level: levels[_level]);//TODO ADD LEVEL
+    final apiPrompt = widget.apiService.getTopicPrompt(prefs.getString("languageName") ?? "English", userPrompt: userPrompt, existingTopics: topicString, level: levels[_level]);
     final response = await widget.apiService.geminiApiCall(apiPrompt);
 
     final Map<String, dynamic> decodedData = json.decode(response);
@@ -177,23 +191,24 @@ class _HomeState extends State<Home> {
     startTopicViewModel topicViewModel = startTopicViewModel.fromMap(decodedData);
     int languageId = await _getLanguageSelectedId();
 
-    ResponseModel responseModel = await widget.topicService.createTopic(topicViewModel, languageId, _level);
+    ResponseModel responseModel = await widget.topicService.createTopic(topicViewModel,languageId,_level);
 
     if (responseModel.isError) {
       print("Error: ${responseModel.message}");
       return;
     }
-    int topicId = responseModel.result;
-    List<SubtopicViewmodel> steps = (decodedData['subtopics'] as List)
-        .map((subtopic) => SubtopicViewmodel.fromMap(subtopic))
-        .toList();
 
+    int topicId = responseModel.result;
+    List<SubtopicViewmodel> steps = (decodedData['subtopics'] as List).map((subtopic) => SubtopicViewmodel.fromMap(subtopic)).toList();
     responseModel = await widget.subtopicService.createManySubtopics(steps, topicId);
 
     if (responseModel.isError) {
       print("Error: ${responseModel.message}");
       return;
     }
+
+    // Actualizar la lista de temas
+    _loadTopics();
 
     Navigator.push(
       context,

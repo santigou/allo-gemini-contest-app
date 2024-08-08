@@ -1,5 +1,4 @@
 import 'dart:convert';
-import 'package:avatar_glow/avatar_glow.dart';
 import 'package:flutter/material.dart';
 import 'package:gemini_proyect/domain/entities/chat_message.dart';
 import 'package:gemini_proyect/domain/entities/concept.dart';
@@ -9,6 +8,9 @@ import 'package:gemini_proyect/domain/services/api_service.dart';
 import 'package:gemini_proyect/domain/services/chat_message_service.dart';
 import 'package:gemini_proyect/domain/services/concept_service.dart';
 import 'package:gemini_proyect/domain/services/subtopic_service.dart';
+import 'package:gemini_proyect/ui/pages/chat/widgets/chat_app_bar.dart';
+import 'package:gemini_proyect/ui/pages/chat/widgets/concepts_list_widget.dart';
+import 'package:gemini_proyect/ui/pages/chat/widgets/chat_message_widget.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:speech_to_text/speech_recognition_result.dart';
@@ -33,6 +35,8 @@ class _ChatScreenState extends State<ChatScreen> {
   final List<Message> _messages = [];
   final TextEditingController _controller = TextEditingController();
   final FlutterTts _flutterTts = FlutterTts();
+  late stt.SpeechToText _speech;
+  bool _isListening = false;
   String _text = "Press the microphone to start speaking";
   final ScrollController _scrollController = ScrollController();
   final FocusNode _focusNode = FocusNode();
@@ -46,18 +50,19 @@ class _ChatScreenState extends State<ChatScreen> {
 
   void _sendMessage() {
     if (_controller.text.isNotEmpty) {
-      setState(() {
-        _messages.add(Message(text: _controller.text, isUser: true));
+      setState(() async {
+        ChatMessage chatMessage = ChatMessage(
+            message: _controller.text,
+            role: "user",
+            subtopicId: widget.classTopic.id!);
+        ResponseModel messageResponse = await widget.chatMessageService.createChatMessage(chatMessage);
+
+        _messages.add(Message(text: _controller.text, isUser: true, id: messageResponse.result));
+        _callApi();
+        _controller.clear();
+        _scrollToBottom();
         _controller.clear();
       });
-      ChatMessage chatMessage = ChatMessage(
-          message: _controller.text,
-          role: "user",
-          subtopicId: widget.classTopic.id!);
-      widget.chatMessageService.createChatMessage(chatMessage);
-      _callApi();
-      _controller.clear();
-      _scrollToBottom();
     }
   }
 
@@ -92,7 +97,7 @@ class _ChatScreenState extends State<ChatScreen> {
   void initState() {
     super.initState();
     _speech = stt.SpeechToText();
-    _callApi();
+    _initializeChat();
     _focusNode.addListener(() {
       if (_focusNode.hasFocus) {
         _scrollToBottom();
@@ -109,20 +114,14 @@ class _ChatScreenState extends State<ChatScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: Text(widget.classTopic.name),
-        centerTitle: true,
-      ),
+      appBar: ChatAppBar(title: widget.classTopic.name, onConceptsPressed: _showConceptsPopup),
       body: Stack(
         children: [
-          // Optional: Subtle background color or image
           Container(
             decoration: const BoxDecoration(
-              color: Colors.white, // or use a subtle background image
+              color: Colors.white,
             ),
           ),
-
-          // Chat messages and input field
           Column(
             children: [
               Expanded(
@@ -146,10 +145,7 @@ class _ChatScreenState extends State<ChatScreen> {
                               : Colors.deepPurple,
                           borderRadius: BorderRadius.circular(15),
                         ),
-                        child: Text(
-                          message.text,
-                          style: const TextStyle(color: Colors.white),
-                        ),
+                        child: ChatMessageWidget(message: message, onConceptPressed: _showConceptsPopup,),
                       ),
                     );
                   },
@@ -157,8 +153,6 @@ class _ChatScreenState extends State<ChatScreen> {
               ),
             ],
           ),
-
-          // Message buttons and Microphone
           Positioned(
             bottom: 0,
             left: 0,
@@ -246,6 +240,18 @@ class _ChatScreenState extends State<ChatScreen> {
     );
   }
 
+  Future<void> _initializeChat() async {
+    List<ChatMessage> existingMessages = await widget.chatMessageService.getChatMessagesBySubtopicId(widget.classTopic.id!);
+    if (existingMessages.isNotEmpty) {
+      setState(() {
+        _messages.addAll(existingMessages.map((chatMessage) => Message(text: chatMessage.message, isUser: chatMessage.role == "user", id: chatMessage.id!)).toList());
+        _scrollToBottom();
+      });
+    } else {
+      _callApi();
+    }
+  }
+
   Future<void> _callApi() async {
     //TODO: Cambiar a inyection?
     ApiService apiService = ApiService();
@@ -289,8 +295,8 @@ class _ChatScreenState extends State<ChatScreen> {
     }
 
     setState(() {
-      _messages.add(Message(text: apiMessage, isUser: false));
-      _scrollToBottom(); // Scroll to bottom after receiving message
+      _messages.add(Message(text: apiMessage, isUser: false, id: messageResponse.result));
+      _scrollToBottom();
     });
     await speak(apiMessage);
     if (success as bool) {
@@ -342,5 +348,3 @@ class _ChatScreenState extends State<ChatScreen> {
       print("Permission denied");
     }
   }
-
-}
