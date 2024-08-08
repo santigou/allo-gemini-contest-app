@@ -8,6 +8,7 @@ import 'package:gemini_proyect/domain/services/api_service.dart';
 import 'package:gemini_proyect/domain/services/chat_message_service.dart';
 import 'package:gemini_proyect/domain/services/concept_service.dart';
 import 'package:gemini_proyect/domain/services/subtopic_service.dart';
+import 'package:gemini_proyect/ui/pages/chat/widgets/chat_app_bar.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:speech_to_text/speech_to_text.dart' as stt;
 import 'package:flutter_tts/flutter_tts.dart';
@@ -39,16 +40,16 @@ class _ChatScreenState extends State<ChatScreen> {
     if (_controller.text.isNotEmpty) {
       setState(() {
         _messages.add(Message(text: _controller.text, isUser: true));
+        ChatMessage chatMessage = ChatMessage(
+            message: _controller.text,
+            role: "user",
+            subtopicId: widget.classTopic.id!);
+        widget.chatMessageService.createChatMessage(chatMessage);
+        _callApi();
+        _controller.clear();
+        _scrollToBottom();
         _controller.clear();
       });
-      ChatMessage chatMessage = ChatMessage(
-          message: _controller.text,
-          role: "user",
-          subtopicId: widget.classTopic.id!);
-      widget.chatMessageService.createChatMessage(chatMessage);
-      _callApi();
-      _controller.clear();
-      _scrollToBottom();
     }
   }
 
@@ -66,7 +67,7 @@ class _ChatScreenState extends State<ChatScreen> {
   void initState() {
     super.initState();
     _speech = stt.SpeechToText();
-    _callApi();
+    _initializeChat();
     _focusNode.addListener(() {
       if (_focusNode.hasFocus) {
         _scrollToBottom();
@@ -83,10 +84,7 @@ class _ChatScreenState extends State<ChatScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: Text(widget.classTopic.name),
-        centerTitle: true,
-      ),
+      appBar: ChatAppBar(title: widget.classTopic.name),
       body: Stack(
         children: [
           // Optional: Subtle background color or image
@@ -181,18 +179,26 @@ class _ChatScreenState extends State<ChatScreen> {
     );
   }
 
+  Future<void> _initializeChat() async {
+    List<ChatMessage> existingMessages = await widget.chatMessageService.getChatMessagesBySubtopicId(widget.classTopic.id!);
+    if (existingMessages.isNotEmpty) {
+      setState(() {
+        _messages.addAll(existingMessages.map((chatMessage) => Message(text: chatMessage.message, isUser: chatMessage.role == "user")).toList());
+        _scrollToBottom();
+      });
+    } else {
+      _callApi();
+    }
+  }
+
   Future<void> _callApi() async {
-    //TODO: Cambiar a inyection?
     ApiService apiService = ApiService();
 
-    //TODO: Enviar el lenguaje correctamente
     final SharedPreferences prefs = await _prefs;
     String language = prefs.getString("languageName") ?? "English";
     int? level = prefs.getInt("topicLevel");
 
-    //TODO: Add the level thinking on sharedPreferences
     final classTopicObjective = widget.classTopic.objectives;
-    //TODO: Get the level of the topic
     final apiPrompt = apiService.getChatPrompt(language, classTopicObjective, _messages, level ?? 1);
     final response = await apiService.geminiApiCall(apiPrompt);
     print(response);
@@ -225,11 +231,10 @@ class _ChatScreenState extends State<ChatScreen> {
 
     setState(() {
       _messages.add(Message(text: apiMessage, isUser: false));
-      _scrollToBottom(); // Scroll to bottom after receiving message
+      _scrollToBottom();
     });
     await speak(apiMessage);
     if (success as bool) {
-      //TODO: desbloquear siguiente nivel y culminar el actual
       print('El usuario finalizo con exito el nivel');
       widget.subtopicService.unlockTopicByOrder(widget.classTopic.order + 1, widget.classTopic.topicId);
     }
@@ -240,7 +245,6 @@ class _ChatScreenState extends State<ChatScreen> {
     await _flutterTts.setSpeechRate(0.5);
     await _flutterTts.setPitch(1.0);
     await _flutterTts.setLanguage('en-US');
-    //await _flutterTts.setVoice({"name": "en-in-x-cxx#male_1-local", "locale": "en-US"});
     await _flutterTts.speak(text);
   }
 

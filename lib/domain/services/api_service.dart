@@ -45,7 +45,6 @@ class ApiService {
 
   String getTopicPrompt(String language,
       {String? userPrompt, String? level, String? existingTopics}) {
-    print(level);
     return '''
     The user want to learn $language with 
     ${userPrompt == null ? "(generate a random topic avoid [$existingTopics] topics)" : "the following topic: \"$userPrompt\""} with the a $level level.
