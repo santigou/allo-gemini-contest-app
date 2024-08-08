@@ -9,6 +9,7 @@ import 'package:gemini_proyect/domain/services/chat_message_service.dart';
 import 'package:gemini_proyect/domain/services/concept_service.dart';
 import 'package:gemini_proyect/domain/services/subtopic_service.dart';
 import 'package:gemini_proyect/ui/pages/chat/widgets/chat_app_bar.dart';
+import 'package:gemini_proyect/ui/pages/chat/widgets/concepts_list_widget.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:speech_to_text/speech_to_text.dart' as stt;
 import 'package:flutter_tts/flutter_tts.dart';
@@ -84,17 +85,14 @@ class _ChatScreenState extends State<ChatScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: ChatAppBar(title: widget.classTopic.name),
+      appBar: ChatAppBar(title: widget.classTopic.name, onMoreOptionsPressed: _showConceptsPopup),
       body: Stack(
         children: [
-          // Optional: Subtle background color or image
           Container(
             decoration: const BoxDecoration(
-              color: Colors.white, // or use a subtle background image
+              color: Colors.white,
             ),
           ),
-
-          // Chat messages and input field
           Column(
             children: [
               Expanded(
@@ -129,8 +127,6 @@ class _ChatScreenState extends State<ChatScreen> {
               ),
             ],
           ),
-
-          // Message buttons and Microphone
           Positioned(
             bottom: 0,
             left: 0,
@@ -271,4 +267,34 @@ class _ChatScreenState extends State<ChatScreen> {
       }
     }
   }
+
+  Future<void> _showConceptsPopup({int? messageId}) async {
+    try {
+
+      List<Concept> concepts;
+
+      if (messageId == null){
+        concepts = await widget.conceptService.getConceptsBySubtopicId(widget.classTopic.id!);
+      }else{
+         //TODO: manage when selected message
+        concepts = await widget.conceptService.getConceptsByMessageId(messageId);
+      }
+
+      showDialog(
+        context: context,
+        builder: (BuildContext context) {
+          return AlertDialog(
+            content: SizedBox(
+              height: 400,
+              width: 300,
+              child: ConceptsPopup(concepts: concepts),
+            ),
+          );
+        },
+      );
+    } catch (error) {
+      print("Error fetching concepts: $error");
+    }
+  }
+
 }

@@ -12,6 +12,15 @@ class ConceptDao {
     });
   }
 
+  Future<List<Concept>> getConceptsBySubtopic({int? subtopicId}) async {
+    final db = await DatabaseService.instance.database;
+    final List<Map<String, dynamic>> maps = await db.rawQuery(
+        'SELECT c.* FROM concepts c INNER JOIN chatMessage cm ON cm.id = c.messageId ${(subtopicId == null) ? '' : "WHERE cm.subtopicId = $subtopicId"} ORDER BY c.id DESC');
+    return List.generate(maps.length, (i) {
+      return Concept.fromSqfliteDatabase(maps[i]);
+    });
+  }
+
   Future<Concept?> getConceptById(int id) async {
     final db = await DatabaseService.instance.database;
     final List<Map<String, dynamic>> maps = await db.rawQuery(

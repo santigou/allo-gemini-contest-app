@@ -88,6 +88,7 @@ class ApiService {
 
     final List<Map<String, String>> messages = messageHistory.map((message) {
       return {
+        'order': (messageHistory.length + 1).toString(),
         'role': message.isUser ? 'user' : 'system',
         'message': message.text,
       };
@@ -104,7 +105,7 @@ class ApiService {
           1 is Basic this means that most of the message must be on $userLanguage and 
           explaining concepts in this language you must provide examples (max. 3) in the learning languages for the user to answer,
           2 is intermediate the conversations must be most on the learning language also you must provide examples for the user,
-          3 is advance the conversation must be most on the learning language but do not provide examples (example: the user asks how do you say grappes? and the language is spanish you can answer "para decir 'grapes' en español you use uvas" this is a concept also),
+          3 is advance the conversation must be most (just exceptions concepts and required user translate) on the learning language but do not provide examples (example: the user asks how do you say grappes? and the language is spanish you can answer "para decir 'grapes' en español you use uvas" this is a concept also),
       concepts:(give a list of new concepts a concept can be new vocabulary, "how to says" ex: My favorite food is ..., grammar topics such us simple past)
       [
         {
@@ -122,6 +123,11 @@ class ApiService {
     here is an example of how you should respond if the user hasn't completed the goal from your perspective yet {'success':false, 'message':'{your response}'}.
     if there are at least 5 messages and the last message is from the user and it says !finish or /finish you must send a message with something like "you compleated this subtopic manually" and  return success true
     JUST RETURN THE JSON WITHOUT ANY OTHER WORD OR TEXT
+    
+    WHEN THE  'success' is true the message must close with '...continue in the following subtopic.'
+    
+    
+    
     IMPORTANT CORRECT IN THE NEXT MESSAGE FOR EXAMPLE:
     -if the user is leaning spanish and says something like "yo freir papas en la tarde" 
     you can answer "el modo correcto para decir eso es  'yo frito papas en la tarde'" and you can send the conjugations in the concepts
@@ -136,6 +142,9 @@ class ApiService {
       answer message: "Buen trabajo, sin embargo, la forma correcta para decir 'I ask for a pineapple pizza' es 'yo pido una pizza con pina' ..."
     - user message: "El jugar al futbol todos los dias"
       answer message: "Bien hecho, pero la respuesta correcta para expresar 'He plays soccer everyday' es 'El juega futbol todos los dias' ..."
+    
+    * When you want that the user translate phrases provide the phrases on the native languaje (no matter the level, always on the native languaje):
+    - message (level 3): "Por favor traduce las siguientes frases: 1. The kid plays soccer 2. My mom cooks pasta" (same for all levels)
     
     Concepts examples:
     * For conjugations (in case the learning language needs it) use the following concept schema:
