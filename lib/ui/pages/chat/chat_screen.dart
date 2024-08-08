@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'package:avatar_glow/avatar_glow.dart';
 import 'package:flutter/material.dart';
 import 'package:gemini_proyect/domain/entities/chat_message.dart';
 import 'package:gemini_proyect/domain/entities/concept.dart';
@@ -8,9 +9,12 @@ import 'package:gemini_proyect/domain/services/api_service.dart';
 import 'package:gemini_proyect/domain/services/chat_message_service.dart';
 import 'package:gemini_proyect/domain/services/concept_service.dart';
 import 'package:gemini_proyect/domain/services/subtopic_service.dart';
+import 'package:permission_handler/permission_handler.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:speech_to_text/speech_recognition_result.dart';
 import 'package:speech_to_text/speech_to_text.dart' as stt;
 import 'package:flutter_tts/flutter_tts.dart';
+import '../../../domain/services/audio_recorder_service.dart';
 import '../../../domain/services/message_service.dart';
 
 class ChatScreen extends StatefulWidget {
@@ -29,11 +33,16 @@ class _ChatScreenState extends State<ChatScreen> {
   final List<Message> _messages = [];
   final TextEditingController _controller = TextEditingController();
   final FlutterTts _flutterTts = FlutterTts();
-  late stt.SpeechToText _speech;
-  bool _isListening = false;
   String _text = "Press the microphone to start speaking";
   final ScrollController _scrollController = ScrollController();
   final FocusNode _focusNode = FocusNode();
+
+  //Audio recorder
+  final AudioRecorder _audioRecorder = AudioRecorder();
+  late stt.SpeechToText _speech;
+  bool _isListening = false;
+  String text = "";
+  double _confidence = 1.0;
 
   void _sendMessage() {
     if (_controller.text.isNotEmpty) {
@@ -48,6 +57,23 @@ class _ChatScreenState extends State<ChatScreen> {
       widget.chatMessageService.createChatMessage(chatMessage);
       _callApi();
       _controller.clear();
+      _scrollToBottom();
+    }
+  }
+
+  void _sendAudioMessage() {
+    if (_text.isNotEmpty) {
+      setState(() {
+        _messages.add(Message(text: _text, isUser: true));
+        _text = "";
+      });
+      ChatMessage chatMessage = ChatMessage(
+          message: _text,
+          role: "user",
+          subtopicId: widget.classTopic.id!);
+      widget.chatMessageService.createChatMessage(chatMessage);
+      _callApi();
+      _text = "";
       _scrollToBottom();
     }
   }
@@ -161,7 +187,7 @@ class _ChatScreenState extends State<ChatScreen> {
                       style: const TextStyle(color: Colors.black),
                     ),
                   ),
-                  IconButton(
+                  if (!_isListening) IconButton(
                     icon: const Icon(Icons.send),
                     color: Colors.deepPurple,
                     onPressed: _sendMessage,
@@ -176,7 +202,46 @@ class _ChatScreenState extends State<ChatScreen> {
               ),
             ),
           ),
+          if (_isListening)
+            Positioned(
+              bottom: 17,
+              left: 20,
+              child: Container(
+                margin: const EdgeInsets.only(right: 200),
+                padding: const EdgeInsets.symmetric(horizontal: 12.0, vertical: 8.0),
+                decoration: BoxDecoration(
+                  color: Colors.grey[200],
+                  borderRadius: BorderRadius.circular(8),
+                ),
+                child: const Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Text(
+                      '0:00',
+                      style: TextStyle(color: Colors.red),
+                    ),
+                    SizedBox(width: 15.0, height: 30),
+                    Text(
+                      'Tap again to stop recording',
+                      style: TextStyle(color: Colors.red),
+                    ),
+                  ],
+                ),
+              ),
+            ),
         ],
+      ),
+      floatingActionButtonLocation: FloatingActionButtonLocation.endFloat,
+      floatingActionButton: AvatarGlow(
+        animate: _isListening,
+        glowColor: Theme.of(context).primaryColor,
+        duration: const Duration(milliseconds: 2000),
+        repeat: true,
+        startDelay: const Duration(milliseconds: 100),
+        child: FloatingActionButton(
+          onPressed: _toggleListening,
+          child: Icon(_isListening ? Icons.stop : Icons.mic),
+        ),
       ),
     );
   }
@@ -245,26 +310,37 @@ class _ChatScreenState extends State<ChatScreen> {
   }
 
   void _toggleListening() async {
-    if (_isListening) {
-      await _speech.stop();
-      setState(() {
-        _isListening = false;
-      });
-    } else {
-      bool available = await _speech.initialize();
-      if (available) {
-        setState(() {
-          _isListening = true;
-        });
-        _speech.listen(
-          onResult: (result) {
-            print(result);
-            setState(() {
-              _text = result.recognizedWords;
-            });
-          },
+    PermissionStatus status = await Permission.microphone.request();
+    if(status.isGranted){
+      if (!_isListening) {
+        bool available = await _speech.initialize(
+          onStatus: (val) => print('onStatus: $val'),
+          onError: (val) => print('onError: $val'),
         );
+        if(available){
+          print("Speech initialization successful");
+          setState(() => _isListening = true);
+          _speech.listen(
+            onResult: (val) => setState(() {
+              _text = val.recognizedWords;
+              if(val.hasConfidenceRating && val.confidence > 0){
+                _confidence = val.confidence;
+              }
+            }),
+          );
+        }else{
+          print("Speech initialization failed");
+        }
+      } else {
+        setState(() => _isListening = false);
+        _speech.stop();
+        print("Stopped listening");
+        print('Recognized Words: $_text');
+        _sendAudioMessage();
       }
+    }else{
+      print("Permission denied");
     }
   }
+
 }

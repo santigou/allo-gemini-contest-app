@@ -2,7 +2,7 @@ import 'package:flutter_sound/flutter_sound.dart';
 import 'package:permission_handler/permission_handler.dart';
 
 class AudioRecorder {
-  FlutterSoundRecorder _recorder;
+  FlutterSoundRecorder _recorder = FlutterSoundRecorder();
   bool _isRecording = false;
 
   AudioRecorder() {
@@ -23,4 +23,6 @@ class AudioRecorder {
       _isRecording = false;
     }
   }
+
+  bool get isRecording => _isRecording;
 }
