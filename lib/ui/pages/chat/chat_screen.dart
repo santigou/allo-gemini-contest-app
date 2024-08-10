@@ -303,8 +303,8 @@ class _ChatScreenState extends State<ChatScreen> {
     final apiPrompt = apiService.getChatPrompt(
         language, classTopicObjective, _messages, level ?? 1);
     final response = await apiService.geminiApiCall(apiPrompt);
-    print(response);
-    final Map<String, dynamic> decodedData = json.decode(response);
+    final cleanedResponse = response.replaceAll(RegExp(r'^```json\s*|\s*```$'), '');
+    final Map<String, dynamic> decodedData = json.decode(cleanedResponse);
 
     final apiMessage = decodedData['message'];
     final success = decodedData['success'];
