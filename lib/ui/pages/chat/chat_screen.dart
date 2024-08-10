@@ -42,6 +42,7 @@ class _ChatScreenState extends State<ChatScreen> {
   late stt.SpeechToText _speech;
   bool _isListening = false;
   String _text = "";
+  double _confidence = 1.0;
 
   //Time
   Timer? _timer;
