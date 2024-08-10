@@ -386,8 +386,6 @@ class _ChatScreenState extends State<ChatScreen> {
         _stopTimer();
         setState(() => _isListening = false);
         _speech.stop();
-        print("Stopped listening");
-        print('Recognized Words: $_text');
         _sendAudioMessage();
       }
     } else {
