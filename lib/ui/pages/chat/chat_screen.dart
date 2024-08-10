@@ -15,10 +15,8 @@ import 'package:gemini_proyect/ui/pages/chat/widgets/concepts_list_widget.dart';
 import 'package:gemini_proyect/ui/pages/chat/widgets/chat_message_widget.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import 'package:speech_to_text/speech_recognition_result.dart';
 import 'package:speech_to_text/speech_to_text.dart' as stt;
 import 'package:flutter_tts/flutter_tts.dart';
-import '../../../domain/services/audio_recorder_service.dart';
 import '../../../domain/services/message_service.dart';
 
 class ChatScreen extends StatefulWidget {
@@ -41,11 +39,9 @@ class _ChatScreenState extends State<ChatScreen> {
   final FocusNode _focusNode = FocusNode();
 
   //Audio recorder
-  final AudioRecorder _audioRecorder = AudioRecorder();
   late stt.SpeechToText _speech;
   bool _isListening = false;
   String _text = "";
-  double _confidence = 1.0;
 
   //Time
   Timer? _timer;
