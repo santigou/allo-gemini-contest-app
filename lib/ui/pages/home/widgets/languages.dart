@@ -73,11 +73,11 @@ class _LanguageSelectorState extends State<LanguageSelector> {
   @override
   Widget build(BuildContext context) {
     return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 16.0),
+      padding: const EdgeInsets.symmetric(horizontal: 10.0),
       child: DropdownButton<String>(
         isExpanded: true,
         value: selectedLanguage,
-        hint: Text('Select Language'),
+        hint: const Text('Select Language'),
         onChanged: (String? newLanguage) {
           if (newLanguage != null) {
             final selected = languages.firstWhere((language) => language.name == newLanguage);

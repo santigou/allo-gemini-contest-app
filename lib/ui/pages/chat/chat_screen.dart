@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:convert';
 import 'package:avatar_glow/avatar_glow.dart';
 import 'package:flutter/material.dart';
@@ -45,6 +46,10 @@ class _ChatScreenState extends State<ChatScreen> {
   bool _isListening = false;
   String _text = "";
   double _confidence = 1.0;
+
+  //Time
+  Timer? _timer;
+  int _seconds = 0;
 
   void _sendMessage() {
     if (_controller.text.isNotEmpty) {
@@ -107,9 +112,29 @@ class _ChatScreenState extends State<ChatScreen> {
     });
   }
 
+  void _startTimer() {
+    _timer = Timer.periodic(const Duration(seconds: 1), (timer) {
+      setState(() {
+        _seconds++;
+      });
+    });
+  }
+
+  void _stopTimer() {
+    _timer?.cancel();
+    _seconds = 0;
+  }
+
+  String _formatDuration(int seconds) {
+    final minutes = (seconds ~/ 60).toString().padLeft(2, '0');
+    final secs = (seconds % 60).toString().padLeft(2, '0');
+    return '$minutes:$secs';
+  }
+
   @override
   void dispose() {
     _focusNode.dispose();
+    _timer?.cancel();
     super.dispose();
   }
 
@@ -212,17 +237,20 @@ class _ChatScreenState extends State<ChatScreen> {
                   color: Colors.grey[200],
                   borderRadius: BorderRadius.circular(8),
                 ),
-                child: const Row(
+                child: Row(
                   mainAxisSize: MainAxisSize.min,
                   children: [
                     Text(
-                      '0:00',
-                      style: TextStyle(color: Colors.red),
+                      _formatDuration(_seconds),
+                      style: const TextStyle(color: Colors.red),
                     ),
-                    SizedBox(width: 15.0, height: 30),
-                    Text(
-                      'Tap again to stop recording',
-                      style: TextStyle(color: Colors.red),
+                    const SizedBox(width: 15.0, height: 30),
+                    const Align(
+                      alignment: Alignment.topRight,
+                      child: Text(
+                          "Tap again to stop recording",
+                          style: TextStyle(color: Colors.red),
+                      ),
                     ),
                   ],
                 ),
@@ -337,6 +365,7 @@ class _ChatScreenState extends State<ChatScreen> {
     PermissionStatus status = await Permission.microphone.request();
     if (status.isGranted) {
       if (!_isListening) {
+        _startTimer();
         bool available = await _speech.initialize(
           onStatus: (val) => print('onStatus: $val'),
           onError: (val) => print('onError: $val'),
@@ -357,6 +386,7 @@ class _ChatScreenState extends State<ChatScreen> {
           print("Speech initialization failed");
         }
       } else {
+        _stopTimer();
         setState(() => _isListening = false);
         _speech.stop();
         print("Stopped listening");
