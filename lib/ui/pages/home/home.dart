@@ -45,6 +45,8 @@ class _HomeState extends State<Home> {
   final Future<SharedPreferences> _prefs = SharedPreferences.getInstance();
   final TextEditingController _controller = TextEditingController();
   int _level = 1;
+  bool _isLoading = false;
+
   final List<String> randomTextList = [
     "Quiero prepararme para una entrevista como programador backend junior en ingles",
     "Voy a trabajar como mesero en Italia, ¿qué necesito saber?",
@@ -123,13 +125,22 @@ class _HomeState extends State<Home> {
                   const SizedBox(width: 10),
                   Expanded(
                     child: ElevatedButton.icon(
-                      onPressed: _callApi,
-                      icon: const Icon(Icons.play_arrow),
+                      onPressed: _isLoading ? null : _callApi,
+                      icon: _isLoading
+                          ? const SizedBox(
+                        width: 24.0,
+                        height: 24.0,
+                        child: CircularProgressIndicator(
+                          color: Colors.white,
+                          strokeWidth: 2.0,
+                        ),
+                      )
+                          : const Icon(Icons.play_arrow, size: 24.0),
                       label: const Text('Start'),
                       style: ElevatedButton.styleFrom(
                         padding: const EdgeInsets.symmetric(
                           horizontal: 10,
-                          vertical: 0,
+                          vertical: 12,
                         ),
                       ),
                     ),
@@ -163,8 +174,8 @@ class _HomeState extends State<Home> {
     }
   }
 
-  void _onSelectLevel (int? selectedLevel){
-    if(selectedLevel is int){
+  void _onSelectLevel(int? selectedLevel) {
+    if (selectedLevel is int) {
       setState(() {
         _level = selectedLevel;
       });
@@ -172,55 +183,96 @@ class _HomeState extends State<Home> {
   }
 
   Future<void> _callApi() async {
-    final SharedPreferences prefs = await _prefs;
-    prefs.setInt("topicLevel", _level);
-    final userPrompt = _controller.text.isEmpty ? null : _controller.text;
-    List<Topic> existingTopics = await widget.topicService.getAllTopics(languageId: prefs.getInt("languageId") ?? 1);
-    List<String> topicNames = existingTopics.map((topic) => topic.name).toList();
-    String topicString = "";
+    setState(() {
+      _isLoading = true;
+    });
 
-    if(topicNames.isNotEmpty){
-      topicString = topicNames.reduce((topics, topic) => "$topics,$topic");
-    }
+    try {
+      final SharedPreferences prefs = await _prefs;
+      prefs.setInt("topicLevel", _level);
+      final userPrompt = _controller.text.isEmpty ? null : _controller.text;
+      List<Topic> existingTopics = await widget.topicService.getAllTopics(languageId: prefs.getInt("languageId") ?? 1);
+      List<String> topicNames = existingTopics.map((topic) => topic.name).toList();
+      String topicString = "";
 
-    final apiPrompt = widget.apiService.getTopicPrompt(prefs.getString("languageName") ?? "English", userPrompt: userPrompt, existingTopics: topicString, level: levels[_level]);
-    final response = await widget.apiService.geminiApiCall(apiPrompt);
+      if (topicNames.isNotEmpty) {
+        topicString = topicNames.reduce((topics, topic) => "$topics,$topic");
+      }
 
-    final Map<String, dynamic> decodedData = json.decode(response);
+      final apiPrompt = widget.apiService.getTopicPrompt(prefs.getString("languageName") ?? "English", userPrompt: userPrompt, existingTopics: topicString, level: levels[_level]);
+      final response = await widget.apiService.geminiApiCall(apiPrompt);
 
-    startTopicViewModel topicViewModel = startTopicViewModel.fromMap(decodedData);
-    int languageId = await _getLanguageSelectedId();
+      final Map<String, dynamic> decodedData = json.decode(response);
 
-    ResponseModel responseModel = await widget.topicService.createTopic(topicViewModel,languageId,_level);
+      startTopicViewModel topicViewModel = startTopicViewModel.fromMap(decodedData);
+      int languageId = await _getLanguageSelectedId();
 
-    if (responseModel.isError) {
-      print("Error: ${responseModel.message}");
-      return;
-    }
+      ResponseModel responseModel = await widget.topicService.createTopic(topicViewModel, languageId, _level);
 
-    int topicId = responseModel.result;
-    List<SubtopicViewmodel> steps = (decodedData['subtopics'] as List).map((subtopic) => SubtopicViewmodel.fromMap(subtopic)).toList();
-    responseModel = await widget.subtopicService.createManySubtopics(steps, topicId);
+      if (responseModel.isError) {
+        print("Error: ${responseModel.message}");
+        _showErrorDialog();
+        setState(() {
+          _isLoading = false;
+        });
+        return;
+      }
 
-    if (responseModel.isError) {
-      print("Error: ${responseModel.message}");
-      return;
-    }
+      int topicId = responseModel.result;
+      List<SubtopicViewmodel> steps = (decodedData['subtopics'] as List).map((subtopic) => SubtopicViewmodel.fromMap(subtopic)).toList();
+      responseModel = await widget.subtopicService.createManySubtopics(steps, topicId);
 
-    // Actualizar la lista de temas
-    _loadTopics();
+      if (responseModel.isError) {
+        print("Error: ${responseModel.message}");
+        _showErrorDialog();
+        setState(() {
+          _isLoading = false;
+        });
+        return;
+      }
 
-    Navigator.push(
-      context,
-      MaterialPageRoute(
-        builder: (context) => StepsScreen(
-          steps: responseModel.result,
-          classTopicName: decodedData['name'],
-          chatMessageService: widget.chatMessageService,
-          conceptService: widget.conceptService,
-          subtopicService: widget.subtopicService,
+      // Actualizar la lista de temas
+      _loadTopics();
+
+      Navigator.push(
+        context,
+        MaterialPageRoute(
+          builder: (context) => StepsScreen(
+            steps: responseModel.result,
+            classTopicName: decodedData['name'],
+            chatMessageService: widget.chatMessageService,
+            conceptService: widget.conceptService,
+            subtopicService: widget.subtopicService,
+          ),
         ),
-      ),
+      );
+    } catch (e) {
+      print("Error: $e");
+      _showErrorDialog();
+    } finally {
+      setState(() {
+        _isLoading = false;
+      });
+    }
+  }
+
+  void _showErrorDialog() {
+    showDialog<void>(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: const Text('Sorry, there was a problem'),
+          content: const Text('Please try again.'),
+          actions: <Widget>[
+            TextButton(
+              child: const Text('OK'),
+              onPressed: () {
+                Navigator.of(context).pop();
+              },
+            ),
+          ],
+        );
+      },
     );
   }
 }

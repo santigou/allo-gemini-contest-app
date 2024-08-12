@@ -33,6 +33,7 @@ class _StepsScreenState extends State<StepsScreen> {
   void initState() {
     super.initState();
     steps = widget.steps;
+    _refreshSteps();
   }
 
   void updateSteps(List<Subtopic> newSteps) {

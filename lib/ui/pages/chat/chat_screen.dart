@@ -273,8 +273,13 @@ class _ChatScreenState extends State<ChatScreen> {
   }
 
   Future<void> _initializeChat() async {
-    List<ChatMessage> existingMessages = await widget.chatMessageService
-        .getChatMessagesBySubtopicId(widget.classTopic.id!);
+    List<ChatMessage> existingMessages = [];
+
+    if(widget.classTopic.id != null){
+      existingMessages = await widget.chatMessageService
+          .getChatMessagesBySubtopicId(widget.classTopic.id!);
+    }
+
     if (existingMessages.isNotEmpty) {
       setState(() {
         _messages.addAll(existingMessages.map((chatMessage) =>
